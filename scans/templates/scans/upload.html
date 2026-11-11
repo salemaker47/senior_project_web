@@ -1,15 +1,66 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Upload{% endblock %}
 {% block content %}
   <h1>Upload a scan</h1>
-  <div class="notice" role="status">
-    The upload form is not built yet. It arrives in the next phase of the project.
-  </div>
-  <section>
-    <h2>What you will be able to upload</h2>
-    <ul class="list">
-      {% for f in supported_formats %}<li>{{ f }}</li>{% endfor %}
-    </ul>
-    <p class="muted">Maximum file size: {{ max_upload_mb }} MB.</p>
-  </section>
+  <p class="lead">One 2D slice, up to {{ max_upload_mb }} MB. The file is read, the picture is kept, and the file itself is discarded.</p>
+
+  {% if models_error %}
+    <div class="notice notice--warn" role="alert">The model store could not be read: {{ models_error }}</div>
+  {% elif not form.has_models %}
+    <div class="notice notice--warn" role="status">
+      No trained models are installed yet, so there is nothing to run. Copy checkpoints into
+      <code>model_store/&lt;model_key&gt;/fold_&lt;k&gt;/</code> first.
+    </div>
+  {% else %}
+    <form method="post" enctype="multipart/form-data" class="upload-form panel" novalidate
+          data-upload-form data-max-bytes="{{ max_upload_bytes }}" data-max-mb="{{ max_upload_mb }}">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="notice notice--error" role="alert">{{ form.non_field_errors|join:" " }}</div>
+      {% endif %}
+
+      <div class="field">
+        <span class="field__label" id="model-label">1. Which kind of scan is it?</span>
+        <p class="field__help">Each model only knows one scan type. Pick the group that matches your image.</p>
+        {% if form.model_key.errors %}
+          <p class="field__error" role="alert">{{ form.model_key.errors|join:" " }}</p>
+        {% endif %}
+        <div class="model-groups" role="radiogroup" aria-labelledby="model-label">
+          {% for heading, items in form.grouped_choices %}
+            <fieldset class="model-group">
+              <legend>{{ heading }}</legend>
+              {% for key, label in items %}
+                <label class="model-option">
+                  <input type="radio" name="model_key" value="{{ key }}"{% if key == selected_model %} checked{% endif %} required>
+                  <span>{{ label }}<br><code>{{ key }}</code></span>
+                </label>
+              {% endfor %}
+            </fieldset>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="id_file">2. Choose the file</label>
+        <p class="field__help">
+          {% for f in supported_formats %}{{ f }}{% if not forloop.last %}; {% endif %}{% endfor %}.
+          The format is recognised from the file's content.
+        </p>
+        {% if form.file.errors %}
+          <p class="field__error" id="file-error" role="alert">{{ form.file.errors|join:" " }}</p>
+        {% endif %}
+        <input type="file" name="file" id="id_file" required
+               {% if form.file.errors %}aria-invalid="true" aria-describedby="file-error"{% endif %}>
+        <p class="field__error" data-size-warning hidden role="alert"></p>
+      </div>
+
+      <div class="cta">
+        <button type="submit" class="btn btn--primary btn--large" data-submit>Predict tumor mask</button>
+        <span class="muted" data-busy hidden>Running the model. This takes a few seconds on a CPU.</span>
+      </div>
+    </form>
+  {% endif %}
 {% endblock %}
+{% block scripts %}<script src="{% static 'scans/js/upload.js' %}" defer></script>{% endblock %}

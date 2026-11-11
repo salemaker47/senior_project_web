@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+  <section class="panel">
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <div class="cta">
+      <a class="btn btn--primary" href="{% url 'scans:home' %}">Back to home</a>
+    </div>
+  </section>
+{% endblock %}

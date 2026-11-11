@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My scans{% endblock %}
+{% block content %}
+  <h1>My scans</h1>
+  <p class="lead">Scans uploaded from this browser. Nobody else can open them.</p>
+
+  {% if scan_deleted %}
+    <div class="notice notice--ok" role="status">The scan and its result were deleted.</div>
+  {% endif %}
+
+  {% if rows %}
+    <ul class="scan-list">
+      {% for row in rows %}
+        <li class="scan-card">
+          <a class="scan-card__thumb" href="{% url 'scans:result' row.scan.id %}" tabindex="-1" aria-hidden="true">
+            {% if row.prediction and row.prediction.is_done %}
+              <img src="{% url 'scans:scan_file' row.scan.id 'overlay' %}" alt="" loading="lazy">
+            {% else %}
+              <span class="scan-card__nothumb">no result</span>
+            {% endif %}
+          </a>
+          <div class="scan-card__body">
+            <a class="scan-card__name" href="{% url 'scans:result' row.scan.id %}">{{ row.scan.original_name }}</a>
+            <p class="muted">
+              {{ row.scan.created_at|date:"Y-m-d H:i" }} UTC ·
+              {% if row.prediction %}<code>{{ row.prediction.model_key }}</code>{% else %}no model run{% endif %}
+            </p>
+            <p>
+              {% if row.prediction and row.prediction.is_done %}
+                {% if row.summary.tumor_found %}
+                  {{ row.summary.tumor_pixels }} tumor pixels ({{ row.share_percent|floatformat:2 }}% of the image)
+                {% else %}
+                  No tumor pixels marked
+                {% endif %}
+              {% elif row.prediction and row.prediction.is_failed %}
+                <span class="tag tag--error">Prediction failed</span>
+              {% else %}
+                <span class="tag">Not finished</span>
+              {% endif %}
+            </p>
+          </div>
+          <div class="scan-card__actions">
+            <a class="btn btn--small" href="{% url 'scans:result' row.scan.id %}">Open</a>
+            <form method="post" action="{% url 'scans:delete_scan' row.scan.id %}"
+                  data-confirm="Delete this scan and its result?">
+              {% csrf_token %}
+              <button type="submit" class="btn btn--danger btn--small">Delete</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="notice" role="status">No scans yet.</div>
+  {% endif %}
+
+  <div class="cta">
+    <a class="btn btn--primary" href="{% url 'scans:upload' %}">Upload a scan</a>
+  </div>
+{% endblock %}

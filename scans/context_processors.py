@@ -29,4 +29,5 @@ def site(request):
         "disclaimer": DISCLAIMER,
         "session_cookie_days": settings.SESSION_COOKIE_AGE // (24 * 60 * 60),
         "max_upload_mb": settings.SCAN_MAX_UPLOAD_BYTES // (1024 * 1024),
+        "max_upload_bytes": settings.SCAN_MAX_UPLOAD_BYTES,
     }

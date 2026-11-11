@@ -19,6 +19,7 @@
         <a href="{% url 'scans:home' %}"{% if request.resolver_match.url_name == 'home' %} aria-current="page"{% endif %}>Home</a>
         {% if cookie_consent %}
           <a href="{% url 'scans:upload' %}"{% if request.resolver_match.url_name == 'upload' %} aria-current="page"{% endif %}>Upload</a>
+          <a href="{% url 'scans:my_scans' %}"{% if request.resolver_match.url_name == 'my_scans' or request.resolver_match.url_name == 'result' %} aria-current="page"{% endif %}>My scans</a>
         {% else %}
           <span class="site-nav__disabled" title="Accept the session cookie to upload">Upload</span>
         {% endif %}
@@ -87,5 +88,6 @@
   </footer>
 
   <script src="{% static 'scans/js/site.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,15 +1,102 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Result{% endblock %}
 {% block content %}
-  <h1>Result</h1>
+  <p class="eyebrow">Result</p>
+  <h1 class="result-title">{{ scan.original_name }}</h1>
   <p class="notice notice--warn" role="note"><strong>{{ disclaimer }}</strong></p>
-  <dl class="facts">
-    <dt>Scan</dt><dd><code>{{ scan.id }}</code></dd>
-    <dt>File</dt><dd>{{ scan.original_name|default:"unnamed" }}</dd>
-    <dt>Uploaded</dt><dd>{{ scan.created_at|date:"Y-m-d H:i" }} UTC</dd>
-    <dt>Model</dt><dd>{{ scan.model_key|default:"not chosen" }}</dd>
-  </dl>
-  <div class="notice" role="status">
-    The mask and overlay appear here in the next phase of the project.
-  </div>
+
+  {% if prediction and prediction.is_done %}
+    <section class="figures" aria-label="Images">
+      <figure class="figure">
+        <figcaption>Original</figcaption>
+        <img src="{% url 'scans:scan_file' scan.id 'original' %}" alt="The uploaded slice in gray scale"
+             width="{{ summary.mask_width }}" height="{{ summary.mask_height }}">
+      </figure>
+      <figure class="figure">
+        <figcaption>Predicted mask</figcaption>
+        <img src="{% url 'scans:scan_file' scan.id 'mask' %}" alt="Predicted tumor mask, white marks tumor pixels"
+             width="{{ summary.mask_width }}" height="{{ summary.mask_height }}">
+      </figure>
+      <figure class="figure">
+        <figcaption>Overlay</figcaption>
+        <div class="viewer" data-viewer
+             data-original="{% url 'scans:scan_file' scan.id 'original' %}"
+             data-mask="{% url 'scans:scan_file' scan.id 'mask' %}">
+          <img src="{% url 'scans:scan_file' scan.id 'overlay' %}" alt="The slice with the predicted tumor area in red"
+               width="{{ summary.mask_width }}" height="{{ summary.mask_height }}" data-viewer-fallback>
+        </div>
+        <div class="slider" data-slider hidden>
+          <label for="overlay-opacity">Overlay opacity</label>
+          <input type="range" id="overlay-opacity" min="0" max="100" step="1" value="45">
+          <output for="overlay-opacity">45%</output>
+        </div>
+      </figure>
+    </section>
+
+    <section aria-label="Summary">
+      <h2>Summary</h2>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat__label">Tumor pixels found</span>
+          <span class="stat__value">{% if summary.tumor_found %}Yes{% else %}None{% endif %}</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Tumor pixels</span>
+          <span class="stat__value">{{ summary.tumor_pixels }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Share of the image</span>
+          <span class="stat__value">{{ share_percent|floatformat:2 }}%</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Run time</span>
+          <span class="stat__value">{{ prediction.run_seconds|floatformat:2 }} s</span>
+        </div>
+      </div>
+      {% if not summary.tumor_found %}
+        <p class="muted">The model marked no tumor pixels on this slice. That is not a statement that the scan is healthy.</p>
+      {% endif %}
+
+      <dl class="facts">
+        <dt>Model</dt><dd>{{ summary.model_label }}<br><code>{{ prediction.model_key }}</code></dd>
+        <dt>Fold</dt><dd>{{ prediction.fold }}</dd>
+        <dt>Threshold</dt><dd>{{ summary.threshold }}</dd>
+        <dt>Small-blob filter</dt><dd>{% if summary.min_blob_pixels %}blobs under {{ summary.min_blob_pixels }} pixels removed{% else %}off{% endif %}</dd>
+        <dt>File format</dt><dd>{{ format_label }}</dd>
+        <dt>Image size</dt><dd>{{ scan.width }} x {{ scan.height }} pixels</dd>
+        {% if scan.n_slices > 1 %}
+          <dt>Slices</dt><dd>{{ scan.n_slices }} in the file; slice {{ summary.slice_index|add:1 }} is shown (the one with the most predicted tumor pixels)</dd>
+        {% endif %}
+        <dt>Uploaded</dt><dd>{{ scan.created_at|date:"Y-m-d H:i" }} UTC</dd>
+      </dl>
+    </section>
+
+    <section aria-label="Downloads">
+      <h2>Downloads</h2>
+      <div class="cta cta--tight">
+        <a class="btn btn--primary" href="{% url 'scans:scan_file' scan.id 'mask' %}?download=1">Mask (PNG)</a>
+        <a class="btn" href="{% url 'scans:scan_file' scan.id 'overlay' %}?download=1">Overlay (PNG)</a>
+        <a class="btn" href="{% url 'scans:scan_zip' scan.id %}">Everything (ZIP)</a>
+      </div>
+    </section>
+  {% elif prediction and prediction.is_failed %}
+    <div class="notice notice--error" role="alert">
+      <strong>The prediction failed.</strong> The scan was read, but the model could not be run on it.
+      <details><summary>Technical details</summary><code>{{ prediction.error_message }}</code></details>
+    </div>
+  {% else %}
+    <div class="notice" role="status">This scan has no finished prediction yet.</div>
+  {% endif %}
+
+  <section class="page-actions">
+    <a class="btn" href="{% url 'scans:upload' %}">Upload another scan</a>
+    <a class="btn" href="{% url 'scans:my_scans' %}">My scans</a>
+    <form method="post" action="{% url 'scans:delete_scan' scan.id %}"
+          data-confirm="Delete this scan and its result?">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--danger">Delete this scan</button>
+    </form>
+  </section>
 {% endblock %}
+{% block scripts %}<script src="{% static 'scans/js/result.js' %}" defer></script>{% endblock %}

@@ -134,9 +134,9 @@ first unticked step of the current phase and never starts the next phase.
 
 - [x] 1. Models `Scan` and `Prediction` (UUID keys, linked by `session_key`), migrations, 20 MB limit, upload handler
 - [x] 2. Services: parse and store an upload without patient tags, `run_prediction(prediction_id)`, delete helpers
-- [ ] 3. Upload form and view (model choice from the registry, labelled by scan type; size and parse validation)
-- [ ] 4. Result page (original, mask, overlay with opacity slider, summary, downloads), owner-only file and zip views
-- [ ] 5. "My scans" page with per-scan delete
+- [x] 3. Upload form and view (model choice from the registry, labelled by scan type; size and parse validation)
+- [x] 4. Result page (original, mask, overlay with opacity slider, summary, downloads), owner-only file and zip views
+- [x] 5. "My scans" page with per-scan delete
 - [ ] 6. Tests: upload with the fake checkpoint, other session gets 404, invalid and oversized files rejected
 - [ ] 7. Browser flow verified on the running server; `docs/PROGRESS.md` updated; summary written
 
