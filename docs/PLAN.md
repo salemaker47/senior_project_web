@@ -20,7 +20,7 @@ Ends by telling the user which files to copy into `model_store/`.
   rendering.
 - 2D readers: PNG/JPEG, FigShare `.mat` (HDF5 `cjdata/image`, transposed),
   BraTS `.h5` (`image[..., 3]` = FLAIR).
-- CLI: `python -m inference.cli <file> --model <key> --out <dir>`.
+- CLI: `python -m inference predict <file> --model <key> --out <dir>`.
 - Tests with a tiny random-weight checkpoint fixture in the real dict layout.
 
 ## Phase 2 — Django skeleton, cookie consent, anonymous sessions
