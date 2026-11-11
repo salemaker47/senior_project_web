@@ -79,6 +79,8 @@ class Prediction(models.Model):
 
     summary = models.JSONField(default=dict, blank=True)
     run_seconds = models.FloatField(null=True, blank=True)
+    # Written for the visitor (see errors.friendly_prediction_error). Technical
+    # detail is logged, never stored here.
     error_message = models.TextField(blank=True, default="")
 
     class Meta:

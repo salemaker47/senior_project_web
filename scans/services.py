@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import os
 import re
 import secrets
@@ -30,7 +31,10 @@ from django.conf import settings
 
 from inference import DISCLAIMER
 
+from .errors import friendly_prediction_error
 from .models import Prediction, Scan
+
+logger = logging.getLogger("scans")
 
 SCANS_SUBDIR = "scans"
 
@@ -108,6 +112,26 @@ def too_large_message() -> str:
     return f"The file is larger than {max_upload_mb()} MB, the limit for a 2D scan."
 
 
+_UNREADABLE_DEFAULT = (
+    "The file was recognised but could not be read. It may be damaged or incomplete. "
+    "Try exporting it again."
+)
+_UNREADABLE_MESSAGES = {
+    "dicom": (
+        "The DICOM file could not be read. Compressed DICOM (JPEG, JPEG 2000, RLE) is not "
+        "supported; export the image uncompressed, or as PNG, and upload that."
+    ),
+    "figshare_mat": (
+        "The .mat file could not be read. The site expects the FigShare brain-tumour "
+        "layout: a 2D image stored at cjdata/image."
+    ),
+    "brats_h5": (
+        "The .h5 file could not be read. The site expects a BraTS 2020 slice: a dataset "
+        "named image with four channels, FLAIR last."
+    ),
+}
+
+
 def _image_size_without_decoding(path: Path) -> Optional[Tuple[int, int]]:
     """(width, height) from the image header, so a huge image is refused before decoding."""
     try:
@@ -147,7 +171,11 @@ def parse_upload(uploaded_file):
         try:
             fmt = loaders.detect_format(path)
         except loaders.UnsupportedFormatError as exc:
+            # The loader's own wording: names the supported formats.
             raise UploadRejected(f"This file is not a scan the site can read: {exc}") from exc
+        except Exception as exc:  # noqa: BLE001 - e.g. a damaged HDF5 container
+            logger.info("upload rejected: format detection failed: %s: %s", type(exc).__name__, exc)
+            raise UploadRejected(_UNREADABLE_DEFAULT) from exc
 
         max_pixels = settings.SCAN_MAX_PIXELS
         if fmt in loaders.IMAGE_FORMATS:
@@ -159,12 +187,11 @@ def parse_upload(uploaded_file):
 
         try:
             scan = loaders.load_scan(path)
-        except UploadRejected:
-            raise
         except Exception as exc:  # noqa: BLE001 - any decoding failure is the same to the visitor
-            raise UploadRejected(
-                f"The file looks like {fmt.replace('_', ' ')} but could not be read: {exc}"
-            ) from exc
+            # The library's own message can hold paths and jargon: log it, do not show it.
+            logger.info("upload rejected: %s file could not be decoded: %s: %s",
+                        fmt, type(exc).__name__, exc)
+            raise UploadRejected(_UNREADABLE_MESSAGES.get(fmt, _UNREADABLE_DEFAULT)) from exc
     finally:
         if temp_path is not None:
             temp_path.unlink(missing_ok=True)
@@ -234,8 +261,8 @@ def run_prediction(prediction_id) -> Prediction:
     names and record summary, fold, run time and status.
 
     Takes only an id and never raises for a failed run (the row gets status
-    "failed" and an error message), so it can move to a background worker
-    later without changes.
+    "failed" and a message written for the visitor; the traceback is logged),
+    so it can move to a background worker later without changes.
     """
     from inference import pipeline
     from inference.postprocess import mask_to_png_array
@@ -270,12 +297,14 @@ def run_prediction(prediction_id) -> Prediction:
         prediction.run_seconds = result.run_seconds
         prediction.status = Prediction.DONE
     except Exception as exc:  # noqa: BLE001 - recorded on the row, shown on the result page
+        # The traceback goes to the log; the visitor gets a plain sentence.
+        logger.exception("prediction %s failed (model %s)", prediction.pk, prediction.model_key)
         for path in written:
             path.unlink(missing_ok=True)
         prediction.original_path = prediction.mask_path = prediction.overlay_path = ""
         prediction.summary = {}
         prediction.status = Prediction.FAILED
-        prediction.error_message = f"{type(exc).__name__}: {exc}"[:1000]
+        prediction.error_message = friendly_prediction_error(exc)
     prediction.save()
     return prediction
 

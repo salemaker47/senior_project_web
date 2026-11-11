@@ -355,12 +355,15 @@ def test_run_prediction_records_a_failure_instead_of_raising(visitor, settings):
 
     finished = services.run_prediction(prediction.id)
     assert finished.status == Prediction.FAILED
-    assert "model_that_is_gone" in finished.error_message
+    # The stored message is written for the visitor; details only go to the log.
+    assert finished.error_message.startswith("The selected model is not available")
+    assert "model_that_is_gone" not in finished.error_message
     assert finished.mask_path == "" and finished.summary == {}
     assert len(_stored_files(settings)) == before
 
     html = _text(visitor.get(_url(scan, "result")))                 # latest prediction is the failed one
-    assert "The prediction failed" in html and DISCLAIMER in html
+    assert "The prediction did not finish" in html and DISCLAIMER in html
+    assert "RegistryError" not in html and "model store:" not in html
     assert visitor.get(_url(scan, "scan_file", "mask")).status_code == 404
 
 

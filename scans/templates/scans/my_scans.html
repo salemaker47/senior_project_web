@@ -33,7 +33,7 @@
                   No tumor pixels marked
                 {% endif %}
               {% elif row.prediction and row.prediction.is_failed %}
-                <span class="tag tag--error">Prediction failed</span>
+                <span class="tag tag--error">Prediction did not finish</span>
               {% else %}
                 <span class="tag">Not finished</span>
               {% endif %}

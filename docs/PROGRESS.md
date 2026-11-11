@@ -191,7 +191,7 @@ first unticked step of the current phase and never starts the next phase.
 ## Phase 5 — Cleanup, README, final checks
 
 - [x] 1. `.env` and committed `.env.example` for the secret key and debug flag; static files served with debug off
-- [ ] 2. Friendly error pages and failed-prediction messages; no stack traces or internal details shown to visitors
+- [x] 2. Friendly error pages and failed-prediction messages; no stack traces or internal details shown to visitors
 - [ ] 3. Management command `purge_old_scans --days 7` (old scans, files, expired sessions)
 - [ ] 4. `README.md`: setup, model files, running the site, tests, command-line tool
 - [ ] 5. `docs/MANUAL_TEST.md` and `docs/LIMITS.md`

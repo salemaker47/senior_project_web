@@ -82,8 +82,11 @@
     </section>
   {% elif prediction and prediction.is_failed %}
     <div class="notice notice--error" role="alert">
-      <strong>The prediction failed.</strong> The scan was read, but the model could not be run on it.
-      <details><summary>Technical details</summary><code>{{ prediction.error_message }}</code></details>
+      <strong>The prediction did not finish.</strong>
+      {{ prediction.error_message|default:"Something went wrong while running the model. Please try again." }}
+    </div>
+    <div class="cta cta--tight">
+      <a class="btn btn--primary" href="{% url 'scans:upload' %}">Upload the scan again</a>
     </div>
   {% else %}
     <div class="notice" role="status">This scan has no finished prediction yet.</div>
