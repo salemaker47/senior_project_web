@@ -79,7 +79,56 @@ first unticked step of the current phase and never starts the next phase.
 - [x] 2. Consent core: `has_consent`, `consent_required`, accept / decline / "Delete my data" views, `Scan` model, CSRF without a second cookie
 - [x] 3. Pages: base template, home, about (served models, limits, disclaimer), upload and result stubs; own CSS and JS
 - [x] 4. Tests: no cookie before accepting, upload blocked without consent, accepting sets the cookie, "Delete my data" clears it
-- [ ] 5. `python manage.py runserver` verified; `docs/PROGRESS.md` updated; summary written
+- [x] 5. `python manage.py runserver` verified; `docs/PROGRESS.md` updated; summary written
+
+### Notes (Phase 2, finished 2026-11-11)
+
+- Result: `.venv/bin/python -m pytest` gives 82 passed, 1 skipped (golden
+  test). `python manage.py runserver` was started and the whole flow was
+  exercised with curl: no cookie on first visit, 403 on `/upload/`, accept sets
+  `sessionid` (Max-Age 1209600, HttpOnly, SameSite=Lax), "Delete my data"
+  expires it.
+- First run on a new checkout: `.venv/bin/python manage.py migrate`.
+- Consent lives in `scans/consent.py`. `has_consent(request)` answers "no"
+  from the missing cookie alone and never opens the session; with a cookie it
+  reads `cookie_consent` from the session. Templates use the `cookie_consent`
+  context variable, never `request.session`.
+- **One cookie only.** `CSRF_USE_SESSIONS = True` keeps the CSRF secret in the
+  session, so no `csrftoken` cookie exists. Consequences to keep in mind in
+  Phase 3:
+  - `{% csrf_token %}` may only be rendered inside `{% if cookie_consent %}`;
+    rendering it for a visitor without consent would create a session.
+  - `scans.middleware.ConsentAwareCsrfViewMiddleware` overrides the private
+    `_get_secret` of Django 4.2 so the session is not opened for visitors
+    without a cookie. `tests/test_consent.py` fails if a Django upgrade breaks
+    this.
+  - The accept and decline forms carry no CSRF token (there is no session to
+    hold one). They are `csrf_exempt` and guarded by `is_same_origin_post`
+    (`Sec-Fetch-Site` and `Origin`).
+- Decline stores nothing on the server. The redirect carries
+  `?consent=declined` for a small banner, and `consent.js` notes the choice in
+  the tab's `sessionStorage` so the banner stays small on later pages.
+- Scans are linked to a random `owner_id` stored in the session at accept time
+  (not the session key). Files go to `media/scans/<owner_id>/<scan_id>/`;
+  `services.delete_owner_data` removes rows and that folder.
+- `Scan` has only the ownership fields; Phase 3 adds upload and result fields
+  in a new migration. `upload` and `result` are stubs behind
+  `consent_required`.
+- `MEDIA_URL` is not routed on purpose. Phase 3 must serve files through a
+  view that checks `owner_id`.
+- Settings: `MODEL_STORE_DIR` (env override), `SCAN_MAX_UPLOAD_BYTES` 32 MB
+  (env override; to be enforced by the Phase 3 upload form),
+  `FILE_UPLOAD_MAX_MEMORY_SIZE` 5 MB, `DATA_UPLOAD_MAX_MEMORY_SIZE` 1 MB,
+  `DATA_UPLOAD_MAX_NUMBER_FILES` 1 (raise in Phase 4 for DICOM series).
+  The secret key comes from `$DJANGO_SECRET_KEY` or the git-ignored
+  `.secret_key`, generated on first start.
+- No auth, admin or messages apps are installed (no accounts).
+- Open items: scans of expired sessions are not cleaned up yet (a management
+  command fits Phase 5); `SESSION_COOKIE_SECURE` is off while `DEBUG` is on
+  because localhost is plain http; the about page lists models from a registry
+  that is scanned once per server start.
+- Still not done from Phase 1: `model_store/` is empty, so real checkpoints,
+  `weights_only=True` on real files and the golden test remain unverified.
 
 ## Phase 3 — Upload, predict, result page, downloads
 

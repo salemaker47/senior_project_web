@@ -22,6 +22,25 @@ their browser.
   virtual environment is `.venv/` (git-ignored); install with
   `.venv/bin/pip install -r requirements.txt`.
 
+## Running it
+
+- First time: `.venv/bin/python manage.py migrate`
+- Server: `.venv/bin/python manage.py runserver`
+- Tests: `.venv/bin/python -m pytest`
+- Command line: `.venv/bin/python -m inference predict <file> --model <key> --out <dir>`
+
+## Consent rules (from Phase 2, binding for later phases)
+
+- No session and no cookie before the visitor accepts. Ask
+  `scans.consent.has_consent(request)`; never read `request.session` for a
+  visitor who has not accepted, in views or templates.
+- Views that store or show visitor data use `@consent_required`.
+- The site sets exactly one cookie. CSRF tokens live in the session, so
+  `{% csrf_token %}` goes only inside `{% if cookie_consent %}`.
+- Visitor data is keyed by `get_owner_id(request)` and stored under
+  `media/scans/<owner_id>/<scan_id>/`. Files are served by an owner-checking
+  view, never through `MEDIA_URL`.
+
 ## Facts about the trained models
 
 - `best_model.pt` is a `torch.save` dict with `state_dict` (weights, `model.`
