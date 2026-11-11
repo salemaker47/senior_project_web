@@ -42,6 +42,9 @@ Ends by telling the user which files to copy into `model_store/`.
 
 ## Phase 4 — 3D volumes (NIfTI, DICOM series)
 
+Status: not built. Phase 5 was done directly after Phase 3 at the owner's
+request. `docs/LIMITS.md` lists 3D input as unsupported.
+
 - Readers for NIfTI (`nibabel`) and DICOM series (`pydicom`), slice selection /
   per-slice prediction, slice browser on the result page, download of the
   predicted volume.
@@ -51,3 +54,8 @@ Ends by telling the user which files to copy into `model_store/`.
 - README with setup and usage, pin the three ML libraries to the training
   versions, final test run, remove dead code, check the disclaimer on every
   result page.
+- As built: friendly error pages and messages, `purge_old_scans`, `.env` for
+  the secret key and debug flag, `README.md`, `docs/MANUAL_TEST.md`,
+  `docs/LIMITS.md`. The three ML libraries could not be pinned to the training
+  versions because no real `experiment_config.json` was available;
+  `requirements.lock.txt` records the versions the project was tested with.

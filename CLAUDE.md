@@ -24,10 +24,18 @@ their browser.
 
 ## Running it
 
-- First time: `.venv/bin/python manage.py migrate`
+- First time: `.venv/bin/python -m config.make_env` (creates `.env` with a
+  secret key), then `.venv/bin/python manage.py migrate`
 - Server: `.venv/bin/python manage.py runserver`
 - Tests: `.venv/bin/python -m pytest`
 - Command line: `.venv/bin/python -m inference predict <file> --model <key> --out <dir>`
+- Housekeeping: `.venv/bin/python manage.py purge_old_scans --days 7`
+- Settings come from `.env` (see `.env.example`). `DJANGO_DEBUG` is off by
+  default; static files are still served by Django.
+- Visitors never see exception text. Failures are logged through the `scans`
+  logger and shown as plain sentences (`scans/errors.py`).
+- Setup and usage for people: `README.md`. Limits: `docs/LIMITS.md`. Browser
+  checklist: `docs/MANUAL_TEST.md`.
 
 ## Consent rules (from Phase 2, binding for later phases)
 
