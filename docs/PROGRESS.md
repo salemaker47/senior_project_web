@@ -5,14 +5,21 @@ first unticked step of the current phase and never starts the next phase.
 
 ## Phase 0 — Scaffold
 
-- [ ] 1. Python/OS checked; `.venv` created; `requirements.txt` written and installed
+- [x] 1. Python/OS checked; `.venv` created; `requirements.txt` written and installed
 - [x] 2. `git init`; `.gitignore` covers `model_store/`, `media/`, `.venv/`, `db.sqlite3`, `.env`
 - [x] 3. `CLAUDE.md` written (app, locations, model facts, rules, phases)
 - [x] 4. `docs/PLAN.md` and `docs/PROGRESS.md` written
 - [x] 5. Empty `inference/`, `tests/`, `model_store/`, `media/` created (with `.gitkeep`)
-- [ ] 6. User told which files to copy into `model_store/` and how to name the folders
+- [x] 6. User told which files to copy into `model_store/` and how to name the folders
 
 ### Notes
+
+- Resolved versions installed on 2026-11-11 (`.venv/bin/pip list`): Django 4.2.30,
+  torch 2.8.0 (CPU, `torch.cuda.is_available() == False`),
+  segmentation-models-pytorch 0.5.0 (pulls timm 1.0.30), albumentations 2.0.8,
+  opencv-python-headless 5.0.0, numpy 2.0.2, pillow 11.3.0, h5py 3.14.0,
+  pydicom 2.4.4 (last line for Python 3.9; pydicom 3 needs 3.10), nibabel 5.3.3,
+  pytest 8.4.2, pytest-django.
 
 - Environment: macOS (Apple Silicon), system Python 3.9 — the only interpreter on
   the machine. Django is therefore held to the 4.2 LTS line (the last that
