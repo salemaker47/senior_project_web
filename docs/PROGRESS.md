@@ -195,5 +195,49 @@ first unticked step of the current phase and never starts the next phase.
 - [x] 3. Management command `purge_old_scans --days 7` (old scans, files, expired sessions)
 - [x] 4. `README.md`: setup, model files, running the site, tests, command-line tool
 - [x] 5. `docs/MANUAL_TEST.md` and `docs/LIMITS.md`
-- [ ] 6. Full test suite green; fresh clone set up and run by following the README
-- [ ] 7. `docs/PROGRESS.md` updated; final summary written
+- [x] 6. Full test suite green; fresh clone set up and run by following the README
+- [x] 7. `docs/PROGRESS.md` updated; final summary written
+
+### Notes (Phase 5, finished 2026-11-11)
+
+- Result: `.venv/bin/python -m pytest` gives 127 passed, 1 skipped (golden
+  test).
+- Fresh-clone check: the repo was cloned into a scratch folder and the README
+  was followed: `config.make_env`, `migrate`, `pytest` (127 passed, 1 skipped),
+  `inference list`, `runserver` with the default `.env` (debug off),
+  accept cookie, upload, mask download, delete my data, `inference predict`,
+  `purge_old_scans --dry-run`. The package install was done from the same
+  `requirements.txt` into a fresh venv in a separate folder and linked in; it
+  resolved to exactly the versions of the working venv.
+- Phase 4 (3D volumes) was not built. Phase 5 was requested directly after
+  Phase 3. NIfTI and DICOM series are listed as unsupported in
+  `docs/LIMITS.md`.
+- `.env`: `DJANGO_SECRET_KEY` (required) and `DJANGO_DEBUG` (default False),
+  plus optional overrides. `python -m config.make_env` creates it from
+  `.env.example`. The Phase 2 `.secret_key` file is gone. Without a key the
+  settings stop with a message that names the command.
+- With debug off Django would not serve static files, so `config/urls.py`
+  serves them itself. No `collectstatic` and no extra package.
+- `DJANGO_SECURE_COOKIES` replaces "secure when debug is off": the demo runs
+  over http on localhost, where Safari drops Secure cookies.
+- Visitors never see exception text: `Prediction.error_message` holds one of
+  four plain sentences (`scans/errors.py`), upload rejections use fixed
+  wording per format, the CSRF failure page and the 400/403/404/500 pages are
+  our own. Tracebacks and library messages go to the `scans` logger (console).
+- `purge_old_scans --days N [--dry-run]` removes expired sessions, scans older
+  than N days, scans whose session no longer exists, and stray folders under
+  `media/scans/` older than one hour. Nothing schedules it.
+- `requirements.lock.txt` records the tested versions. The three ML libraries
+  are still not pinned to the training versions.
+
+### Still open after Phase 5
+
+- `model_store/` has been empty in every session. Never done with real files:
+  loading a real checkpoint (`weights_only=True`, strict load), a real
+  prediction in the browser, and the golden test. `docs/MANUAL_TEST.md` is the
+  checklist for this.
+- Pin `torch`, `segmentation-models-pytorch` and `albumentations` to
+  `repro_metadata.lib_versions` once an `experiment_config.json` is available.
+- Phase 4 (3D volumes) if wanted.
+- Python 3.9 and Django 4.2 are past upstream support; Python 3.12 would allow
+  Django 5.
