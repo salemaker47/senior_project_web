@@ -143,16 +143,26 @@ MEDIA_URL = "/media/"
 MODEL_STORE_DIR = Path(os.environ.get("MODEL_STORE_DIR") or BASE_DIR / "model_store")
 
 # Upload limits.
-#   SCAN_MAX_UPLOAD_BYTES         largest scan file the upload form accepts
+#   SCAN_MAX_UPLOAD_BYTES         largest 2D scan file the upload form accepts
+#   SCAN_MAX_PIXELS               largest slice (width x height) accepted
 #   FILE_UPLOAD_MAX_MEMORY_SIZE   files above this are streamed to a temp file
 #   DATA_UPLOAD_MAX_MEMORY_SIZE   largest request body excluding file data
 #   DATA_UPLOAD_MAX_NUMBER_FILES  files per request
 #   DATA_UPLOAD_MAX_NUMBER_FIELDS form fields per request
-SCAN_MAX_UPLOAD_BYTES = _env_int("SCAN_MAX_UPLOAD_BYTES", 32 * 1024 * 1024)      # 32 MB
+SCAN_MAX_UPLOAD_BYTES = _env_int("SCAN_MAX_UPLOAD_BYTES", 20 * 1024 * 1024)      # 20 MB
+SCAN_MAX_PIXELS = 4096 * 4096
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024                                     # 5 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1 * 1024 * 1024                                     # 1 MB
 DATA_UPLOAD_MAX_NUMBER_FILES = 1
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 50
+
+# The first handler stops reading an upload as soon as it passes
+# SCAN_MAX_UPLOAD_BYTES, so an oversized file is never written to disk.
+FILE_UPLOAD_HANDLERS = [
+    "scans.uploadhandlers.MaxSizeUploadHandler",
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+]
 
 
 # --------------------------------------------------------------------------- #

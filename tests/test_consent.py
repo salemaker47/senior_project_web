@@ -27,9 +27,7 @@ from scans import services
 from scans.consent import (
     CONSENT_AT_SESSION_KEY,
     CONSENT_SESSION_KEY,
-    OWNER_SESSION_KEY,
     consent_required,
-    is_valid_owner_id,
 )
 from scans.models import Scan
 
@@ -68,9 +66,9 @@ def _accept(client, **extra):
     return client.post(ACCEPT, {"next": extra.pop("next", HOME)}, **extra)
 
 
-def _make_scan(owner_id: str, name: str = "scan.png") -> Scan:
-    scan = Scan.objects.create(owner_id=owner_id, original_name=name)
-    folder = services.scan_media_dir(owner_id, scan.id)
+def _make_scan(session_key: str, name: str = "scan.png") -> Scan:
+    scan = Scan.objects.create(session_key=session_key, original_name=name)
+    folder = services.scan_media_dir(scan.id)
     folder.mkdir(parents=True)
     (folder / "input.png").write_bytes(b"input")
     (folder / "mask.png").write_bytes(b"mask")
@@ -186,7 +184,7 @@ def test_accepting_sets_the_session_cookie(client):
     assert session[CONSENT_SESSION_KEY] is True
     stamp = datetime.fromisoformat(session[CONSENT_AT_SESSION_KEY])
     assert stamp.tzinfo is not None
-    assert is_valid_owner_id(session[OWNER_SESSION_KEY])
+    assert session.session_key
     assert Session.objects.count() == 1
 
 
@@ -210,12 +208,12 @@ def test_only_one_cookie_is_ever_set(client):
     assert set(client.cookies) == {COOKIE}
 
 
-def test_accepting_twice_keeps_owner_and_timestamp(client):
+def test_accepting_twice_keeps_session_and_timestamp(client):
     _accept(client)
-    first = dict(client.session)
+    first, first_key = dict(client.session), client.session.session_key
     _accept(client)
     second = dict(client.session)
-    assert second[OWNER_SESSION_KEY] == first[OWNER_SESSION_KEY]
+    assert client.session.session_key == first_key
     assert second[CONSENT_AT_SESSION_KEY] == first[CONSENT_AT_SESSION_KEY]
     assert Session.objects.count() == 1
 
@@ -263,7 +261,7 @@ def test_decline_after_accepting_changes_nothing(client):
 # --------------------------------------------------------------------------- #
 def test_result_is_visible_to_its_owner_only(client):
     _accept(client)
-    mine = _make_scan(client.session[OWNER_SESSION_KEY])
+    mine = _make_scan(client.session.session_key)
     theirs = _make_scan(uuid.uuid4().hex)
 
     response = client.get(reverse("scans:result", args=[mine.id]))
@@ -277,13 +275,11 @@ def test_result_is_visible_to_its_owner_only(client):
 # --------------------------------------------------------------------------- #
 def test_delete_my_data_clears_scans_files_session_and_cookie(client, settings):
     _accept(client)
-    owner = client.session[OWNER_SESSION_KEY]
     session_key = client.session.session_key
-    _make_scan(owner, "a.png")
-    _make_scan(owner, "b.png")
-    other_owner = uuid.uuid4().hex
-    other = _make_scan(other_owner)
-    assert services.owner_media_dir(owner).is_dir()
+    mine = [_make_scan(session_key, "a.png"), _make_scan(session_key, "b.png")]
+    mine_dirs = [services.scan_media_dir(scan.id) for scan in mine]
+    other = _make_scan(uuid.uuid4().hex)
+    assert all(folder.is_dir() for folder in mine_dirs)
 
     response = client.post(DELETE)
     assert response.status_code == 302 and response["Location"] == f"{HOME}?deleted=1"
@@ -295,10 +291,10 @@ def test_delete_my_data_clears_scans_files_session_and_cookie(client, settings):
     assert Session.objects.count() == 0
 
     # This visitor's rows and files are gone; another visitor's are untouched.
-    assert not Scan.objects.filter(owner_id=owner).exists()
-    assert not services.owner_media_dir(owner).exists()
+    assert not Scan.objects.filter(session_key=session_key).exists()
+    assert not any(folder.exists() for folder in mine_dirs)
     assert Scan.objects.filter(pk=other.pk).exists()
-    assert (services.scan_media_dir(other_owner, other.id) / "mask.png").is_file()
+    assert (services.scan_media_dir(other.id) / "mask.png").is_file()
 
     # The browser drops the expired cookie; the old id no longer works.
     client.cookies.clear()
@@ -332,10 +328,16 @@ def test_delete_my_data_needs_a_csrf_token():
     assert Session.objects.count() == 0
 
 
-def test_owner_media_dir_rejects_foreign_ids():
-    for bad in ("", "../etc", "a" * 31, "A" * 32, None):
-        with pytest.raises(ValueError):
-            services.owner_media_dir(bad)
+def test_media_path_stays_inside_media_root(settings):
+    settings.MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+    outside = settings.MEDIA_ROOT.parent / "secret.txt"
+    outside.write_text("secret")
+    inside = settings.MEDIA_ROOT / "scans" / "x" / "file.png"
+    inside.parent.mkdir(parents=True)
+    inside.write_bytes(b"png")
+    assert services.media_path("scans/x/file.png") == inside.resolve()
+    for bad in ("", "../secret.txt", "scans/../../secret.txt", str(outside), "scans/x/missing.png"):
+        assert services.media_path(bad) is None
 
 
 # --------------------------------------------------------------------------- #
@@ -361,7 +363,7 @@ def test_settings():
     assert s.SESSION_COOKIE_SAMESITE == "Lax"
     assert s.CSRF_USE_SESSIONS is True
     assert s.DATABASES["default"]["ENGINE"].endswith("sqlite3")
-    assert s.SCAN_MAX_UPLOAD_BYTES == 32 * 1024 * 1024
+    assert s.SCAN_MAX_UPLOAD_BYTES == 20 * 1024 * 1024
     assert s.FILE_UPLOAD_MAX_MEMORY_SIZE <= s.SCAN_MAX_UPLOAD_BYTES
     assert s.DATA_UPLOAD_MAX_NUMBER_FILES == 1
     assert "django.contrib.auth" not in s.INSTALLED_APPS
