@@ -138,7 +138,51 @@ first unticked step of the current phase and never starts the next phase.
 - [x] 4. Result page (original, mask, overlay with opacity slider, summary, downloads), owner-only file and zip views
 - [x] 5. "My scans" page with per-scan delete
 - [x] 6. Tests: upload with the fake checkpoint, other session gets 404, invalid and oversized files rejected
-- [ ] 7. Browser flow verified on the running server; `docs/PROGRESS.md` updated; summary written
+- [x] 7. Browser flow verified on the running server; `docs/PROGRESS.md` updated; summary written
+
+### Notes (Phase 3, finished 2026-11-11)
+
+- Result: `.venv/bin/python -m pytest` gives 110 passed, 1 skipped (golden
+  test). The flow was run on `runserver` with a random-weight checkpoint
+  (`MODEL_STORE_DIR` pointed at a fake store): accept cookie, upload a PNG,
+  result page, mask download, zip download, my scans, delete. Pages were
+  checked in headless Chrome, including the opacity slider.
+- **Not yet run with real checkpoints**: `model_store/` is still empty. After
+  copying models: `python manage.py migrate`, `runserver`, upload a real slice.
+- After pulling this phase run `python manage.py migrate` (migrations 0002 and
+  0003).
+- Changed from Phase 2, as the Phase 3 brief asked:
+  - `Scan` and `Prediction` are linked to the visitor by `session_key`. The
+    separate random `owner_id` in the session is gone;
+    `consent.get_session_key(request)` replaces `get_owner_id`.
+  - `SCAN_MAX_UPLOAD_BYTES` is 20 MB (was 32 MB).
+- **The uploaded file is not kept.** It is parsed by the `inference` loader and
+  only the pixel data is stored (`scans/<scan id>/<random>.npz`), with the
+  loader's technical metadata in `Scan.meta`. This is how "do not store DICOM
+  patient tags" is met on disk as well as in the database; it also drops the
+  FigShare patient id and image EXIF data. The zip therefore holds
+  `original.png` (the 8-bit slice), `mask.png`, `overlay.png`, `summary.json`
+  and a README, not the original upload.
+- Files: `media/scans/<scan id>/<32 hex>.npz|png`. They are served only by
+  `views.scan_file` and `views.scan_zip`, which return 404 unless the request's
+  session owns the scan (also 404 without a session, without opening one).
+- `services.run_prediction(prediction_id)` does the whole job and records a
+  failure on the row instead of raising. The upload view calls it directly.
+  A scan can have several predictions; the pages show the latest.
+- Upload validation: size (stream stopped by `MaxSizeUploadHandler`, checked
+  again in `parse_upload`), format from content, decode, at least 8x8 pixels,
+  at most `SCAN_MAX_PIXELS` (4096x4096), finite values. Rejected uploads leave
+  no row and no file.
+- A multi-frame DICOM is accepted; the slice with the most predicted tumor
+  pixels is shown. Browsing slices is Phase 4.
+- Own error pages (`scans/errors.py`, `templates/error.html`, `500.html`):
+  Django's default handlers open the session through its stock CSRF helper,
+  which broke the "never open the session before consent" rule on 404 pages.
+- The overlay slider paints the mask on a canvas above the original; without
+  JavaScript the server-rendered `overlay.png` is shown.
+- Open items for Phase 5: cleanup of scans whose session expired; the
+  prediction runs inside the request (a few seconds on CPU, first request also
+  loads the model); pin the three ML libraries; golden test with real files.
 
 ## Phase 4 — 3D volumes (NIfTI, DICOM series)
 

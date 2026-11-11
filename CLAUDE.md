@@ -37,9 +37,15 @@ their browser.
 - Views that store or show visitor data use `@consent_required`.
 - The site sets exactly one cookie. CSRF tokens live in the session, so
   `{% csrf_token %}` goes only inside `{% if cookie_consent %}`.
-- Visitor data is keyed by `get_owner_id(request)` and stored under
-  `media/scans/<owner_id>/<scan_id>/`. Files are served by an owner-checking
-  view, never through `MEDIA_URL`.
+- Visitor data (`Scan`, `Prediction`) is keyed by the session key,
+  `get_session_key(request)`. Files live under `media/scans/<scan_id>/` with
+  random names and are served only by owner-checking views (404 for anyone
+  else), never through `MEDIA_URL`.
+- The uploaded file is never kept: only the parsed pixel data and the loader's
+  technical metadata are stored. No DICOM patient tags on disk or in the
+  database.
+- Error pages come from `scans/errors.py`; Django's default handlers would
+  open the session.
 
 ## Facts about the trained models
 

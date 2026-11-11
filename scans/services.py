@@ -147,10 +147,7 @@ def parse_upload(uploaded_file):
         try:
             fmt = loaders.detect_format(path)
         except loaders.UnsupportedFormatError as exc:
-            raise UploadRejected(
-                "This file is not a scan the site can read. Supported: PNG, JPEG, TIFF, "
-                f"FigShare .mat, BraTS .h5 and single DICOM files. ({exc})"
-            ) from exc
+            raise UploadRejected(f"This file is not a scan the site can read: {exc}") from exc
 
         max_pixels = settings.SCAN_MAX_PIXELS
         if fmt in loaders.IMAGE_FORMATS:
