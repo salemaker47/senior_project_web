@@ -9,51 +9,26 @@ accepts the session cookie (see scans/consent.py).
 import os
 from pathlib import Path
 
-from django.core.management.utils import get_random_secret_key
+from django.core.exceptions import ImproperlyConfigured
+
+from config.env import env_bool, env_int, env_list, load_env_file
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Secret key, debug flag and optional overrides live in `.env` (git-ignored;
+# see `.env.example`). Real environment variables take precedence.
+load_env_file(BASE_DIR / ".env")
 
-def _env_bool(name: str, default: bool) -> bool:
-    value = os.environ.get(name)
-    if value is None:
-        return default
-    return value.strip().lower() in ("1", "true", "yes", "on")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY is not set. Create the .env file with:  python -m config.make_env"
+    )
 
+# Off by default, so visitors never see Django's debug pages and stack traces.
+DEBUG = env_bool("DJANGO_DEBUG", False)
 
-def _env_int(name: str, default: int) -> int:
-    value = os.environ.get(name)
-    return int(value) if value else default
-
-
-def _load_secret_key() -> str:
-    """
-    $DJANGO_SECRET_KEY if set; otherwise a random key generated once and kept in
-    the git-ignored file `.secret_key`, so sessions survive a server restart.
-    """
-    key = os.environ.get("DJANGO_SECRET_KEY")
-    if key:
-        return key
-    key_file = BASE_DIR / ".secret_key"
-    if key_file.is_file():
-        key = key_file.read_text(encoding="utf-8").strip()
-        if key:
-            return key
-    key = get_random_secret_key()
-    key_file.write_text(key + "\n", encoding="utf-8")
-    try:
-        key_file.chmod(0o600)
-    except OSError:
-        pass
-    return key
-
-
-SECRET_KEY = _load_secret_key()
-
-# Local demo. Set DJANGO_DEBUG=0 to try the production-style behaviour.
-DEBUG = _env_bool("DJANGO_DEBUG", True)
-
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", ["localhost", "127.0.0.1", "[::1]"])
 
 
 # --------------------------------------------------------------------------- #
@@ -119,12 +94,14 @@ SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_AGE = 14 * 24 * 60 * 60          # 14 days
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_SECURE = not DEBUG                # localhost runs over plain http
+# localhost runs over plain http; turn this on when the site is behind HTTPS.
+SESSION_COOKIE_SECURE = env_bool("DJANGO_SECURE_COOKIES", False)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = False
 
 # Keep the CSRF secret in the session, so no second cookie is ever set.
 CSRF_USE_SESSIONS = True
+CSRF_FAILURE_VIEW = "scans.errors.csrf_failure"
 
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -140,7 +117,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
 # Trained checkpoints: <MODEL_STORE_DIR>/<model_key>/fold_<k>/best_model.pt
-MODEL_STORE_DIR = Path(os.environ.get("MODEL_STORE_DIR") or BASE_DIR / "model_store")
+# Relative values are taken from the project folder; absolute paths stay absolute.
+MODEL_STORE_DIR = BASE_DIR / (os.environ.get("MODEL_STORE_DIR") or "model_store")
 
 # Upload limits.
 #   SCAN_MAX_UPLOAD_BYTES         largest 2D scan file the upload form accepts
@@ -149,7 +127,7 @@ MODEL_STORE_DIR = Path(os.environ.get("MODEL_STORE_DIR") or BASE_DIR / "model_st
 #   DATA_UPLOAD_MAX_MEMORY_SIZE   largest request body excluding file data
 #   DATA_UPLOAD_MAX_NUMBER_FILES  files per request
 #   DATA_UPLOAD_MAX_NUMBER_FIELDS form fields per request
-SCAN_MAX_UPLOAD_BYTES = _env_int("SCAN_MAX_UPLOAD_BYTES", 20 * 1024 * 1024)      # 20 MB
+SCAN_MAX_UPLOAD_BYTES = env_int("SCAN_MAX_UPLOAD_BYTES", 20 * 1024 * 1024)      # 20 MB
 SCAN_MAX_PIXELS = 4096 * 4096
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024                                     # 5 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1 * 1024 * 1024                                     # 1 MB
@@ -179,3 +157,21 @@ USE_TZ = True
 # --------------------------------------------------------------------------- #
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+# --------------------------------------------------------------------------- #
+# Logging: technical details of failures go to the console, not to visitors
+# --------------------------------------------------------------------------- #
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "plain": {"format": "[{asctime}] {levelname} {name}: {message}", "style": "{"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "plain"},
+    },
+    "loggers": {
+        "scans": {"handlers": ["console"], "level": "INFO"},
+    },
+}

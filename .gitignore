@@ -22,6 +22,3 @@ staticfiles/
 .DS_Store
 .vscode/
 .idea/
-
-# Auto-generated Django secret key for local development
-.secret_key
