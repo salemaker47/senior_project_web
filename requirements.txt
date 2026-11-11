@@ -1,12 +1,15 @@
-# Web app dependencies (Phase 0). Install:  python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+# Web app dependencies. Install:
+#   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 #
-# Python on this machine is 3.9, so Django is held to the 4.2 LTS line — the
-# last line that supports 3.9 (Django 5.x needs Python >= 3.10).
+# Django is held to the 4.2 LTS line, the last one that supports Python 3.9
+# (Django 5.x needs Python >= 3.10).
 #
-# torch, segmentation-models-pytorch and albumentations are UNPINNED: no
-# model_store/**/experiment_config.json existed when this file was written.
-# Before Phase 3, pin them to the versions under repro_metadata.lib_versions of
-# a real checkpoint's experiment_config.json (see docs/PROGRESS.md).
+# torch, segmentation-models-pytorch and albumentations are NOT pinned to the
+# training versions: no experiment_config.json was available when this was
+# written. The training versions are in each checkpoint's
+# experiment_config.json under repro_metadata.lib_versions.
+#
+# requirements.lock.txt holds the exact versions the project was tested with.
 Django>=4.2,<5.0
 
 # CPU-only torch. On macOS the PyPI wheel is already CPU/MPS; on Linux the extra
