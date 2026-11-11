@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+  {% if data_deleted %}
+    <div class="notice notice--ok" role="status">
+      Your scans, results and session cookie were deleted. Nothing about you is stored any more.
+    </div>
+  {% endif %}
+
+  <section class="hero">
+    <p class="eyebrow">Senior project demo</p>
+    <h1>Upload a brain MRI slice, get the predicted tumor mask.</h1>
+    <p class="lead">
+      A segmentation network trained on public research datasets marks the pixels it
+      believes belong to a tumor. You get the mask and an overlay on your image.
+    </p>
+
+    <div class="cta">
+      {% if cookie_consent %}
+        <a class="btn btn--primary btn--large" href="{% url 'scans:upload' %}">Upload a scan</a>
+      {% else %}
+        <button type="button" class="btn btn--primary btn--large" disabled aria-describedby="upload-disabled-reason">Upload a scan</button>
+        <p id="upload-disabled-reason" class="cta__reason">
+          Upload is disabled until you accept the session cookie. The cookie is what links
+          an uploaded scan to your browser; without it the site could not show you your result.
+        </p>
+      {% endif %}
+      <a class="btn btn--large" href="{% url 'scans:about' %}">About the models</a>
+    </div>
+  </section>
+
+  <section class="steps" aria-label="How it works">
+    <article class="step">
+      <span class="step__number">1</span>
+      <h2>Choose a scan</h2>
+      <p>One 2D slice as PNG, JPEG, TIFF, a FigShare <code>.mat</code>, a BraTS <code>.h5</code> or a single DICOM file, up to {{ max_upload_mb }} MB.</p>
+    </article>
+    <article class="step">
+      <span class="step__number">2</span>
+      <h2>The model predicts</h2>
+      <p>The slice is prepared exactly like the training images and run through the network on this machine's CPU.</p>
+    </article>
+    <article class="step">
+      <span class="step__number">3</span>
+      <h2>See and download</h2>
+      <p>The predicted mask, a red overlay and a short summary. Only your browser can open them, and you can delete them at any time.</p>
+    </article>
+  </section>
+{% endblock %}

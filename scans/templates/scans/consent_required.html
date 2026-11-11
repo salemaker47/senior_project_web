@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Cookie needed{% endblock %}
+{% block content %}
+  <section class="panel">
+    <h1>This page needs the session cookie</h1>
+    <p>
+      Uploading a scan and viewing a result only work once you accept the session cookie.
+      The cookie links a scan to your browser, so the site can show the result to you and
+      to nobody else. Without it there is no way to tell whose scan is whose.
+    </p>
+    <p>It is one essential cookie. No tracking, no account.</p>
+    <div class="cta">
+      <form method="post" action="{% url 'scans:consent_accept' %}" data-consent="accept">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="btn btn--primary">Accept cookie and continue</button>
+      </form>
+      <a class="btn" href="{% url 'scans:home' %}">Back to home</a>
+    </div>
+  </section>
+{% endblock %}

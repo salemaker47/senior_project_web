@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+  <h1>Result</h1>
+  <p class="notice notice--warn" role="note"><strong>{{ disclaimer }}</strong></p>
+  <dl class="facts">
+    <dt>Scan</dt><dd><code>{{ scan.id }}</code></dd>
+    <dt>File</dt><dd>{{ scan.original_name|default:"unnamed" }}</dd>
+    <dt>Uploaded</dt><dd>{{ scan.created_at|date:"Y-m-d H:i" }} UTC</dd>
+    <dt>Model</dt><dd>{{ scan.model_key|default:"not chosen" }}</dd>
+  </dl>
+  <div class="notice" role="status">
+    The mask and overlay appear here in the next phase of the project.
+  </div>
+{% endblock %}

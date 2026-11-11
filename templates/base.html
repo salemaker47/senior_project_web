@@ -1,0 +1,91 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Brain MRI tumor segmentation{% endblock %} · Demo</title>
+  <link rel="stylesheet" href="{% static 'scans/css/site.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="{% url 'scans:home' %}">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span>Brain MRI segmentation</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="{% url 'scans:home' %}"{% if request.resolver_match.url_name == 'home' %} aria-current="page"{% endif %}>Home</a>
+        {% if cookie_consent %}
+          <a href="{% url 'scans:upload' %}"{% if request.resolver_match.url_name == 'upload' %} aria-current="page"{% endif %}>Upload</a>
+        {% else %}
+          <span class="site-nav__disabled" title="Accept the session cookie to upload">Upload</span>
+        {% endif %}
+        <a href="{% url 'scans:about' %}"{% if request.resolver_match.url_name == 'about' %} aria-current="page"{% endif %}>About</a>
+      </nav>
+    </div>
+  </header>
+
+  {% if not cookie_consent %}
+    {# No csrf_token here on purpose: a token would create the session we have not been allowed to create. #}
+    <section id="cookie-banner" class="cookie-banner{% if consent_declined %} is-declined{% endif %}" aria-label="Cookie consent">
+      <div class="wrap">
+        <div class="cookie-banner__full">
+          <div class="cookie-banner__text">
+            <h2>One cookie, only if you accept</h2>
+            <p>
+              This site uses a single essential session cookie. Its only job is to link the
+              scans you upload to this browser, so that you, and nobody else, can see your
+              results. There is no tracking and no account. Nothing is stored until you accept.
+            </p>
+          </div>
+          <div class="cookie-banner__actions">
+            <form method="post" action="{% url 'scans:consent_accept' %}" data-consent="accept">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn btn--primary">Accept cookie</button>
+            </form>
+            <form method="post" action="{% url 'scans:consent_decline' %}" data-consent="decline">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn">Decline</button>
+            </form>
+          </div>
+        </div>
+        <div class="cookie-banner__compact">
+          <p>
+            You declined the session cookie, so nothing is stored and upload is disabled.
+            You can still read every page.
+          </p>
+          <form method="post" action="{% url 'scans:consent_accept' %}" data-consent="accept">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="btn btn--small">Accept cookie</button>
+          </form>
+        </div>
+      </div>
+    </section>
+    <script src="{% static 'scans/js/consent.js' %}"></script>
+  {% endif %}
+
+  <main id="main" class="wrap site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <p class="disclaimer"><strong>{{ disclaimer }}</strong></p>
+      {% if cookie_consent %}
+        <form method="post" action="{% url 'scans:delete_my_data' %}" class="delete-form"
+              data-confirm="Delete all scans and results linked to this browser and remove the cookie?">
+          {% csrf_token %}
+          <span>Session cookie accepted. Your uploads are linked to this browser for up to {{ session_cookie_days }} days.</span>
+          <button type="submit" class="btn btn--danger btn--small">Delete my data</button>
+        </form>
+      {% else %}
+        <p class="muted">No cookie is set and nothing about you is stored.</p>
+      {% endif %}
+    </div>
+  </footer>
+
+  <script src="{% static 'scans/js/site.js' %}" defer></script>
+</body>
+</html>

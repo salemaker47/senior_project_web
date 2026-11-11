@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+  <h1>About this demo</h1>
+  <p class="lead">
+    A student project that serves brain-tumor segmentation networks trained on public
+    datasets. <strong>{{ disclaimer }}</strong>
+  </p>
+
+  <section>
+    <h2>Models served</h2>
+    {% if models_error %}
+      <div class="notice notice--warn" role="alert">
+        The model store could not be read: {{ models_error }}
+      </div>
+    {% elif models %}
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">Expects</th>
+              <th scope="col">Fold served</th>
+              <th scope="col">Validation Dice</th>
+              <th scope="col">Threshold</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in models %}
+              <tr>
+                <td><strong>{{ m.display_label }}</strong><br><code>{{ m.key }}</code></td>
+                <td>{{ m.scan_type_label }}</td>
+                <td>{{ m.fold }} of {{ m.folds|length }}</td>
+                <td>{% if m.best_score is None %}n/a{% else %}{{ m.best_score|floatformat:4 }}{% endif %}</td>
+                <td>{{ m.threshold }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">
+        For each model the cross-validation fold with the highest validation Dice is served.
+        Validation Dice was measured on held-out images of the training dataset. It says how
+        well the model does on that dataset, not how well it does on your scan.
+      </p>
+    {% else %}
+      <div class="notice" role="status">
+        No trained models are installed yet. Copy checkpoints into
+        <code>model_store/&lt;model_key&gt;/fold_&lt;k&gt;/</code> and restart the server.
+      </div>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>Limits</h2>
+    <ul class="list">
+      <li><strong>Each model knows one kind of scan.</strong> FigShare models were trained on T1 contrast-enhanced slices, BraTS models on skull-stripped FLAIR slices. A different sequence, a CT image or a photo of a film gives an unreliable mask.</li>
+      <li><strong>One 2D slice at a time.</strong> The network sees a single slice resized to 256 by 256 pixels. It has no 3D context.</li>
+      <li><strong>It marks pixels, it does not diagnose.</strong> The output is a mask. It does not name a tumor type, and an empty mask does not mean a healthy brain.</li>
+      <li><strong>It can be wrong in both directions.</strong> It may miss a tumor, and it may mark healthy tissue, especially on scans unlike its training data.</li>
+      <li><strong>Scores are from research datasets.</strong> Where a model was validated with an image-level split, slices of one patient can sit on both sides of the split, which makes the score optimistic.</li>
+      <li><strong>Accepted files:</strong> {% for f in supported_formats %}{{ f }}{% if not forloop.last %}; {% endif %}{% endfor %}. Maximum size {{ max_upload_mb }} MB.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Cookies and your data</h2>
+    <ul class="list">
+      <li>There are no accounts and there is no tracking.</li>
+      <li>The site uses one essential session cookie, and only after you accept it. It is HttpOnly, lasts {{ session_cookie_days }} days and holds a random identifier, nothing else.</li>
+      <li>The cookie links your uploaded scans and their results to this browser. Other visitors cannot open them.</li>
+      <li>If you decline, no cookie is set and nothing is stored on the server. You can read this page and the home page, but upload stays disabled. Your browser tab remembers the choice so the banner stays small; that note never leaves your browser.</li>
+      <li>Once you have accepted, a "Delete my data" button sits at the bottom of every page. It removes your scans, your results and the cookie immediately.</li>
+      <li>Do not upload scans that carry a name or other personal details in the image.</li>
+    </ul>
+  </section>
+{% endblock %}

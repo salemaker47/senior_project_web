@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+  <h1>Upload a scan</h1>
+  <div class="notice" role="status">
+    The upload form is not built yet. It arrives in the next phase of the project.
+  </div>
+  <section>
+    <h2>What you will be able to upload</h2>
+    <ul class="list">
+      {% for f in supported_formats %}<li>{{ f }}</li>{% endfor %}
+    </ul>
+    <p class="muted">Maximum file size: {{ max_upload_mb }} MB.</p>
+  </section>
+{% endblock %}
