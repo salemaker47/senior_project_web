@@ -194,6 +194,6 @@ first unticked step of the current phase and never starts the next phase.
 - [x] 2. Friendly error pages and failed-prediction messages; no stack traces or internal details shown to visitors
 - [x] 3. Management command `purge_old_scans --days 7` (old scans, files, expired sessions)
 - [x] 4. `README.md`: setup, model files, running the site, tests, command-line tool
-- [ ] 5. `docs/MANUAL_TEST.md` and `docs/LIMITS.md`
+- [x] 5. `docs/MANUAL_TEST.md` and `docs/LIMITS.md`
 - [ ] 6. Full test suite green; fresh clone set up and run by following the README
 - [ ] 7. `docs/PROGRESS.md` updated; final summary written
