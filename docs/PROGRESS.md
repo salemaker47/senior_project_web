@@ -75,7 +75,11 @@ first unticked step of the current phase and never starts the next phase.
 
 ## Phase 2 — Django skeleton, cookie consent, anonymous sessions
 
-- [ ] not started
+- [ ] 1. Django project `config` + app `scans`; settings (SQLite, `media/`, `MODEL_STORE_DIR`, upload limits, 14-day HttpOnly SameSite=Lax session cookie)
+- [ ] 2. Consent core: `has_consent`, `consent_required`, accept / decline / "Delete my data" views, `Scan` model, CSRF without a second cookie
+- [ ] 3. Pages: base template, home, about (served models, limits, disclaimer), upload and result stubs; own CSS and JS
+- [ ] 4. Tests: no cookie before accepting, upload blocked without consent, accepting sets the cookie, "Delete my data" clears it
+- [ ] 5. `python manage.py runserver` verified; `docs/PROGRESS.md` updated; summary written
 
 ## Phase 3 — Upload, predict, result page, downloads
 
