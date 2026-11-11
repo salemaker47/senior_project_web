@@ -93,9 +93,17 @@ def test_no_session_cookie_before_accepting(client, url):
 
 
 def test_several_page_views_still_set_nothing(client):
-    for url in (HOME, ABOUT, HOME, UPLOAD, ABOUT):
+    for url in (HOME, ABOUT, HOME, UPLOAD, ABOUT, "/no/such/page/"):
         response = client.get(url)
         _assert_untouched(response, client)
+
+
+def test_error_pages_follow_the_consent_rules(client):
+    response = client.get("/no/such/page/")
+    assert response.status_code == 404
+    html = _text(response)
+    assert "Page not found" in html and 'id="cookie-banner"' in html and DISCLAIMER in html
+    _assert_untouched(response, client)
 
 
 def test_home_shows_disabled_upload_with_explanation(client):
