@@ -53,15 +53,19 @@
   this site copies that behaviour. The same image can give slightly different
   masks on two runs.
 
-**Not yet verified in this repository**
+**What has been verified, and what not**
 
-- The site and its tests have only been run with a random-weight test
-  checkpoint. Loading the real checkpoints, and reproducing training-time
-  predictions with the golden test, still has to be done once the files are in
-  `model_store/`.
-- `torch`, `segmentation-models-pytorch` and `albumentations` are not pinned
-  to the training versions. A different version can make a checkpoint fail to
-  load, or change results slightly.
+- Verified with the model `01_dice_image_level` (U-Net ResNet34, Dice loss,
+  FigShare, image-level split): the checkpoint loads safely and strictly, and
+  on six test-split slices the site's masks are pixel-identical to the
+  training code's own predictions (the golden test). Uploading the raw
+  FigShare `.mat` files gives the same masks as the PNGs.
+- That model was trained on the MacBook GPU with the FigShare data rebuilt
+  from the public download, not on Colab. Its scores belong to that run.
+- `torch`, `segmentation-models-pytorch` and `albumentations` are pinned to the
+  versions that model was trained with. Models trained with other versions,
+  for example the Colab models, have not been checked here.
+- The FLAIR (BraTS) side of the site has never run with a real model.
 
 ## The app
 

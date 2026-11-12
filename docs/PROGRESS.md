@@ -241,3 +241,30 @@ first unticked step of the current phase and never starts the next phase.
 - Phase 4 (3D volumes) if wanted.
 - Python 3.9 and Django 4.2 are past upstream support; Python 3.12 would allow
   Django 5.
+
+## After Phase 5 — first real model (2026-11-12)
+
+Not a phase of the plan; recorded so the next session knows the state.
+
+- Model `01_dice_image_level` (U-Net ResNet34, Dice loss, FigShare,
+  image-level split, folds 1-5) was trained on the MacBook GPU with the
+  training repo's own notebook code, on FigShare data rebuilt locally from the
+  public download. Copied into `model_store/01_dice_image_level/fold_1..5/`
+  (`best_model.pt` + `experiment_config.json`; `best.ckpt` left out).
+- Fold 1 is served (best validation Dice 0.8550). Test Dice over the five
+  folds: 0.851 ± 0.005.
+- Checked: `weights_only=True` loads the real file, it holds no `loss_fn.*`
+  keys, the strict load works. Golden test with six fold-1 test slices (two per
+  tumour class), reference masks made with the training repo's
+  `BrainTumorDataset` + `build_eval_transform` + `load_model_from_pt` on CPU:
+  pixel-identical. Raw `.mat` uploads give the same masks as the PNGs.
+  Site run end to end with a PNG and a `.mat` upload; test data deleted after.
+- Full suite: 133 passed (the golden test now runs on this machine).
+- `requirements.txt` pins torch 2.8.0, segmentation-models-pytorch 0.5.0 and
+  albumentations 2.0.8, the versions in this model's
+  `repro_metadata.lib_versions`.
+- Golden pair folders (`tests/golden/*/`) are git-ignored.
+- Demo files for the browser: `Senior_Project_local/demo_uploads/` (six fold-1
+  test slices with ground truth, three raw `.mat` files).
+- Still open: the Colab-trained models (other library versions), any BraTS /
+  FLAIR model, Phase 4.

@@ -4,10 +4,10 @@
 # Django is held to the 4.2 LTS line, the last one that supports Python 3.9
 # (Django 5.x needs Python >= 3.10).
 #
-# torch, segmentation-models-pytorch and albumentations are NOT pinned to the
-# training versions: no experiment_config.json was available when this was
-# written. The training versions are in each checkpoint's
-# experiment_config.json under repro_metadata.lib_versions.
+# torch, segmentation-models-pytorch and albumentations are pinned to the
+# versions recorded in repro_metadata.lib_versions of the served model's
+# experiment_config.json (01_dice_image_level, trained 2026-11-12). If you serve
+# a model trained with other versions, check its experiment_config.json.
 #
 # requirements.lock.txt holds the exact versions the project was tested with.
 Django>=4.2,<5.0
@@ -15,10 +15,10 @@ Django>=4.2,<5.0
 # CPU-only torch. On macOS the PyPI wheel is already CPU/MPS; on Linux the extra
 # index below provides the +cpu wheels so no CUDA libraries are pulled in.
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch
+torch==2.8.0
 
-segmentation-models-pytorch
-albumentations
+segmentation-models-pytorch==0.5.0
+albumentations==2.0.8
 opencv-python-headless
 numpy
 pillow

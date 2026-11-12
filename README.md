@@ -84,10 +84,10 @@ score. With an empty `model_store/` it prints "no models found". Restart the
 site after adding or changing models.
 
 The three machine-learning packages (`torch`, `segmentation-models-pytorch`,
-`albumentations`) are not pinned to the versions used in training. The versions
-used in training are recorded in each `experiment_config.json` under
-`repro_metadata.lib_versions`. If a checkpoint fails to load, install those
-versions.
+`albumentations`) are pinned to the versions the served model
+`01_dice_image_level` was trained with. Every model records its own versions in
+`experiment_config.json` under `repro_metadata.lib_versions`. If a model
+trained with other versions fails to load, install that model's versions.
 
 ## Run the site
 
@@ -118,7 +118,9 @@ skipped test.
 
 The skipped test is the golden test. It compares the site's output with masks
 predicted in the training repository and runs once you add real files, as
-described in [tests/golden/README.md](tests/golden/README.md).
+described in [tests/golden/README.md](tests/golden/README.md). On the
+development machine the pairs for `01_dice_image_level` are present, so it
+runs there and the count is 133 passed.
 
 ## Command-line tool
 
