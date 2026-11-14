@@ -268,3 +268,13 @@ Not a phase of the plan; recorded so the next session knows the state.
   test slices with ground truth, three raw `.mat` files).
 - Still open: the Colab-trained models (other library versions), any BraTS /
   FLAIR model, Phase 4.
+
+## GitHub (2026-11-14)
+
+- Pushed `main` to `https://github.com/salemaker47/senior_project_web` (public)
+  at the owner's request. This replaces the earlier "no remote, no push" rule;
+  `CLAUDE.md` now says: push only when the owner asks.
+- Checked before publishing: no secrets, `.env`, database, uploads, model files
+  or golden images in the history. GitHub holds the code only; the trained
+  model must be copied into `model_store/` after a clone (see README).
+

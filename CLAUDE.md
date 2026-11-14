@@ -88,7 +88,10 @@ their browser.
 - One phase per session. Never start the next phase.
 - Keep `docs/PROGRESS.md` as a checklist per phase. Tick each step and commit
   right after finishing it, so a new session can resume if this one is cut off.
-- Small local commits. No remote, no push.
+- Small local commits. The repo is hosted on GitHub since 2026-11-14 (`origin` =
+  `https://github.com/salemaker47/senior_project_web`, public). Push only when
+  the owner asks; never push `.env`, `model_store/`, `media/`, the database or
+  the golden test images (all git-ignored).
 - The `inference/` package must not import Django.
 - Copy the preprocessing from the training repo exactly; do not re-invent it.
 - Tests use pytest and must pass without the real checkpoints: build a tiny
