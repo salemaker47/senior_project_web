@@ -23,7 +23,7 @@ from urllib.parse import urlsplit
 from django.conf import settings
 from django.shortcuts import render
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.http import is_same_domain, url_has_allowed_host_and_scheme
 
 CONSENT_SESSION_KEY = "cookie_consent"
 CONSENT_AT_SESSION_KEY = "cookie_consent_at"
@@ -105,15 +105,37 @@ def is_same_origin_post(request) -> bool:
     such requests are refused, so another site cannot make a visitor "accept".
     Clients that send neither header (curl, the test client) are allowed: they
     are not a browser acting for a victim.
+
+    The Origin must name this site's host. The scheme is not compared: behind
+    an HTTPS proxy the browser says https while this process sees http. An
+    origin listed in settings.CSRF_TRUSTED_ORIGINS is accepted as well.
     """
     fetch_site = request.headers.get("Sec-Fetch-Site")
     if fetch_site is not None and fetch_site.lower() not in ("same-origin", "none"):
         return False
     origin = request.headers.get("Origin")
-    if origin is not None:
-        parts = urlsplit(origin)
-        return parts.scheme == request.scheme and parts.netloc == request.get_host()
-    return True
+    if origin is None:
+        return True
+    parts = urlsplit(origin)
+    if not parts.netloc:
+        return False                       # "null" and other opaque origins
+    if parts.netloc == request.get_host():
+        return True
+    return _is_trusted_origin(parts.scheme, parts.netloc)
+
+
+def _is_trusted_origin(scheme: str, netloc: str) -> bool:
+    """Same matching as Django's CSRF_TRUSTED_ORIGINS: exact, or `*.domain` wildcards."""
+    for trusted in settings.CSRF_TRUSTED_ORIGINS:
+        t = urlsplit(trusted)
+        if t.scheme != scheme:
+            continue
+        if t.netloc.startswith("*."):
+            if is_same_domain(netloc, t.netloc[1:]):
+                return True
+        elif t.netloc == netloc:
+            return True
+    return False
 
 
 def safe_next_url(request, default: str = "/") -> str:

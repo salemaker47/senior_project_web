@@ -36,6 +36,11 @@ their browser.
   logger and shown as plain sentences (`scans/errors.py`).
 - Setup and usage for people: `README.md`. Limits: `docs/LIMITS.md`. Browser
   checklist: `docs/MANUAL_TEST.md`.
+- Public hosting: `deploy/huggingface/` (Dockerfile, start script, guide in
+  `HOSTING.md`). The Space clones this repo from GitHub when it builds, so
+  hosted code changes only after a push and a "Factory rebuild". Proxy settings
+  (`DJANGO_BEHIND_PROXY`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_FRAME_ANCESTORS`)
+  are off by default and must stay off for localhost.
 
 ## Consent rules (from Phase 2, binding for later phases)
 

@@ -278,3 +278,25 @@ Not a phase of the plan; recorded so the next session knows the state.
   or golden images in the history. GitHub holds the code only; the trained
   model must be copied into `model_store/` after a clone (see README).
 
+## Hosting on Hugging Face Spaces (2026-11-14)
+
+- Added at the owner's request ("free cloud option"): `deploy/huggingface/`
+  with `Dockerfile`, Space `README.md`, `start.sh`, `install_model.py` and the
+  guide `HOSTING.md`. The Space holds only those two files plus the model
+  files; the image clones the code from GitHub.
+- App changes, all off by default: `DJANGO_BEHIND_PROXY`,
+  `DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_FRAME_ANCESTORS`;
+  `FrameAncestorsMiddleware` replaces Django's X-Frame-Options middleware (same
+  DENY by default); the consent origin check compares hosts, not schemes, and
+  accepts trusted origins; `frame.js` shows an "open in its own tab" notice
+  when the site is framed (cookies do not work in the Hugging Face page);
+  `gunicorn` added to the requirements.
+- Tested locally without Docker: clean copy of the code, model install step,
+  `start.sh`, gunicorn, proxied requests with and without `X-Forwarded-Proto`
+  and with an internal Host header, forged origin refused, framed notice
+  checked in headless Chrome. Suite: 150 passed.
+- **Not tested:** building the Docker image and running on Hugging Face. The
+  first build there is the first test of the Dockerfile.
+- The owner still has to: push, create the Space, upload the four files
+  (prepared in `Senior_Project_local/hf_space_upload/`).
+

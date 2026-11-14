@@ -106,6 +106,12 @@ limit is 20 MB.
 This is Django's development server. It is meant for a demo on your own
 machine, not for the open internet.
 
+## Hosting it for other devices
+
+GitHub only stores this code; it cannot run the site. To get a public link
+that works from any device, the site can run for free on Hugging Face Spaces.
+The step-by-step guide is [deploy/huggingface/HOSTING.md](deploy/huggingface/HOSTING.md).
+
 ## Tests
 
 ```
@@ -161,6 +167,9 @@ Settings live in `.env`. Variables set in the shell take precedence.
 | `DJANGO_SECURE_COOKIES` | `False` | Send the session cookie over HTTPS only. |
 | `MODEL_STORE_DIR` | `model_store` | Folder with the model files. |
 | `SCAN_MAX_UPLOAD_BYTES` | `20971520` | Largest upload in bytes. |
+| `DJANGO_BEHIND_PROXY` | `False` | Trust the `X-Forwarded-Proto` header of an HTTPS proxy. Hosting only. |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | empty | Extra origins allowed to post forms, e.g. `https://*.hf.space`. Hosting only. |
+| `DJANGO_FRAME_ANCESTORS` | empty | Sites allowed to show the app in a frame. Empty means none. |
 
 ## What is stored about a visitor
 
@@ -182,6 +191,7 @@ inference/    model loading and prediction; does not import Django
 templates/    base template and error pages
 tests/        pytest suite; tests/golden/ for real reference masks
 docs/         PLAN.md, PROGRESS.md, LIMITS.md, MANUAL_TEST.md
+deploy/       files for hosting on Hugging Face Spaces
 model_store/  trained models (git-ignored)
 media/        uploaded pixel data and results (git-ignored)
 ```

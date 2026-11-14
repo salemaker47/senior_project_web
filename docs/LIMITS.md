@@ -83,10 +83,22 @@
 
 - The prediction runs inside the upload request, on the CPU. The page waits
   until it is done. The first prediction after a start also loads the model.
-- It is built for one or a few visitors on one machine: Django's development
-  server and a SQLite database. Do not put it on the open internet as it is.
+- It is built for one or a few visitors on one machine and a SQLite database.
+  `runserver` is Django's development server; do not expose that to the
+  internet. For a public link use the hosting setup in `deploy/huggingface/`,
+  which runs a production server with debug off and secure cookies.
 - Models are found when the server starts. Restart it after changing
   `model_store/`.
+
+**When hosted publicly (Hugging Face Spaces)**
+
+- Anyone with the link can upload. There are no accounts and no rate limit.
+- Uploads are deleted after one day and are lost at every restart of the
+  Space; a free Space has no permanent disk.
+- A free Space sleeps when nobody visits and takes about a minute to wake.
+- One server process on a shared CPU: fine for a demo, slow under load.
+- The container image has not been built on the development machine. The
+  server, start script and proxy behaviour were tested locally without Docker.
 
 **Privacy**
 

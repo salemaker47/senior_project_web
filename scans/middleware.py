@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from django.conf import settings
+from django.middleware.clickjacking import XFrameOptionsMiddleware
 from django.middleware.csrf import CsrfViewMiddleware
 from django.utils.cache import patch_vary_headers
 
@@ -27,6 +29,26 @@ class ConsentAwareCsrfViewMiddleware(CsrfViewMiddleware):
         if not has_session_cookie(request):
             return None
         return super()._get_secret(request)
+
+
+class FrameAncestorsMiddleware(XFrameOptionsMiddleware):
+    """
+    Who may show this site inside a frame.
+
+    Default: nobody (`X-Frame-Options: DENY`, Django's usual behaviour). When
+    settings.FRAME_ANCESTORS lists sites, those and the site itself are allowed
+    through a Content-Security-Policy header instead; X-Frame-Options cannot
+    name a site. A hosting page such as huggingface.co shows the app in a
+    frame, where the session cookie does not work, so base.html then tells
+    the visitor to open the site in its own tab (static/scans/js/frame.js).
+    """
+
+    def process_response(self, request, response):
+        ancestors = settings.FRAME_ANCESTORS
+        if not ancestors:
+            return super().process_response(request, response)
+        response.headers["Content-Security-Policy"] = "frame-ancestors 'self' " + " ".join(ancestors)
+        return response
 
 
 class VaryOnCookieMiddleware:

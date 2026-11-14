@@ -30,6 +30,18 @@ DEBUG = env_bool("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", ["localhost", "127.0.0.1", "[::1]"])
 
+# Hosting behind an HTTPS proxy (for example Hugging Face Spaces; see
+# deploy/huggingface/). All off by default, so localhost behaves as before.
+#   DJANGO_BEHIND_PROXY          trust the proxy's X-Forwarded-Proto header
+#   DJANGO_CSRF_TRUSTED_ORIGINS  e.g. https://*.hf.space
+#   DJANGO_FRAME_ANCESTORS       sites allowed to show this site in a frame,
+#                                e.g. https://huggingface.co (default: nobody)
+BEHIND_PROXY = env_bool("DJANGO_BEHIND_PROXY", False)
+if BEHIND_PROXY:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", [])
+FRAME_ANCESTORS = env_list("DJANGO_FRAME_ANCESTORS", [])
+
 
 # --------------------------------------------------------------------------- #
 # Applications
@@ -47,7 +59,8 @@ MIDDLEWARE = [
     # CSRF secret lives in the session (no csrftoken cookie); this subclass
     # never opens the session for a visitor without a session cookie.
     "scans.middleware.ConsentAwareCsrfViewMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # X-Frame-Options: DENY, unless DJANGO_FRAME_ANCESTORS names allowed sites.
+    "scans.middleware.FrameAncestorsMiddleware",
     "scans.middleware.VaryOnCookieMiddleware",
 ]
 
