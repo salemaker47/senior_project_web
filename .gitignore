@@ -15,9 +15,6 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 
-# Django collected static files
-staticfiles/
-
 # OS / editor
 .DS_Store
 .vscode/

@@ -51,7 +51,6 @@ class InferenceResult:
     fold: int
     threshold: float
     run_seconds: float
-    scan_meta: Dict[str, Any]
     slices: List[SliceResult] = field(default_factory=list)
 
     @property
@@ -98,7 +97,7 @@ def run_scan(
 
     result = InferenceResult(
         model_key=entry.key, fold=entry.fold, threshold=entry.threshold,
-        run_seconds=run_seconds, scan_meta=dict(scan.meta),
+        run_seconds=run_seconds,
     )
     extra = {
         "model_label":     entry.display_label,

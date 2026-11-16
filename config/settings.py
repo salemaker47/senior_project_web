@@ -113,8 +113,6 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 # localhost runs over plain http; turn this on when the site is behind HTTPS.
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SECURE_COOKIES", False)
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = False
 
 # Keep the CSRF secret in the session, so no second cookie is ever set.
 CSRF_USE_SESSIONS = True
@@ -128,11 +126,10 @@ SECURE_REFERRER_POLICY = "same-origin"
 # --------------------------------------------------------------------------- #
 # Files: uploads, results, trained models
 # --------------------------------------------------------------------------- #
-# Uploaded scans and results. Not routed in urls.py on purpose: Phase 3 serves
-# these files through a view that checks the owner.
+# Uploaded scans and results. Not routed in urls.py on purpose: these files
+# are served only through a view that checks the owner.
 # DJANGO_MEDIA_ROOT: the public sharing mode keeps its own upload folder.
 MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT") or BASE_DIR / "media")
-MEDIA_URL = "/media/"
 
 # Trained checkpoints: <MODEL_STORE_DIR>/<model_key>/fold_<k>/best_model.pt
 # Relative values are taken from the project folder; absolute paths stay absolute.
@@ -174,9 +171,6 @@ USE_TZ = True
 
 
 # --------------------------------------------------------------------------- #
-# Static files (our own CSS and JavaScript; no CDN, no build step)
-# --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
 # Request firewall and access code (public sharing only; scans/firewall.py)
 # --------------------------------------------------------------------------- #
 REQUEST_FIREWALL = env_bool("DJANGO_REQUEST_FIREWALL", False)
@@ -193,8 +187,11 @@ ACCESS_PASSWORD = os.environ.get("DEMO_ACCESS_PASSWORD", "")
 NO_INDEX = env_bool("DJANGO_NO_INDEX", False)
 
 
+# --------------------------------------------------------------------------- #
+# Static files (our own CSS and JavaScript; no CDN, no build step)
+# --------------------------------------------------------------------------- #
+# Served by config/urls.py straight from the app folder; no collectstatic.
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # --------------------------------------------------------------------------- #

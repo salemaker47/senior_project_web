@@ -347,3 +347,11 @@ and asked for it to be safe for the computer, with several layers of protection.
   `SHARING.md`). Not changed from here because it needs the admin password.
 - Not pushed. `git push` when the owner wants GitHub to have it.
 
+## Cleanup of unused code (2026-11-17)
+
+Not a phase of the plan. The owner asked for a review of everything written so
+far and for unnecessary and unused parts to be deleted.
+
+- [x] 1. Small leftovers: `config/asgi.py`, `ModelRegistry.clear_cache`, `InferenceResult.scan_meta`, the launcher's `current_share.txt`, settings that restated Django defaults or were never read (`MEDIA_URL`, `STATIC_ROOT`), `nibabel` from the requirements
+- [ ] 2. Hugging Face deployment and the framing code that only it needed
+- [ ] 3. Docs brought in line; full test run; notes below

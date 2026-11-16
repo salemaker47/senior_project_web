@@ -24,7 +24,6 @@ numpy
 pillow
 h5py
 pydicom
-nibabel
 
 # Production web server, used when the site is hosted (deploy/huggingface/).
 gunicorn

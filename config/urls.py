@@ -1,7 +1,7 @@
 """
 URL configuration.
 
-MEDIA_URL is deliberately not routed: stored scans and results belong to one
+The media folder is deliberately not routed: stored scans and results belong to one
 visitor and are served by scans.views.scan_file, which checks the owner.
 
 Static files (our own CSS and JavaScript) are served by Django itself, also

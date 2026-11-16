@@ -228,9 +228,6 @@ class ModelRegistry:
         self._models[key] = model
         return model
 
-    def clear_cache(self) -> None:
-        self._models.clear()
-
 
 def scan_model_store(model_store: Path) -> Dict[str, ModelEntry]:
     """Return {model_key: ModelEntry} for every key with at least one usable fold."""

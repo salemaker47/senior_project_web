@@ -385,7 +385,6 @@ def test_project_paths():
 
     base = Path(project_settings.__file__).resolve().parent.parent
     assert project_settings.MEDIA_ROOT == base / "media"
-    assert project_settings.STATIC_ROOT == base / "staticfiles"
     assert project_settings.BASE_DIR == base
 
 

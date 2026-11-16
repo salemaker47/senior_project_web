@@ -33,6 +33,7 @@ Standard library only.
 from __future__ import annotations
 
 import argparse
+import base64
 import os
 import re
 import secrets
@@ -216,8 +217,6 @@ def _http_status(url: str, headers: Optional[Dict[str, str]] = None, timeout: fl
 
 
 def _basic_header(code: str) -> Dict[str, str]:
-    import base64
-
     return {"Authorization": "Basic " + base64.b64encode(f"{ACCESS_USER}:{code}".encode()).decode()}
 
 
@@ -256,7 +255,7 @@ def wipe_visitor_data(share_data: Path) -> int:
     scans = share_data / "media" / "scans"
     count = sum(1 for p in scans.iterdir() if p.is_dir()) if scans.is_dir() else 0
     shutil.rmtree(share_data / "media", ignore_errors=True)
-    for name in ("db.sqlite3", "db.sqlite3-journal", "current_share.txt"):
+    for name in ("db.sqlite3", "db.sqlite3-journal"):
         (share_data / name).unlink(missing_ok=True)
     shutil.rmtree(share_data / "home", ignore_errors=True)
     shutil.rmtree(share_data / "tunnel_home", ignore_errors=True)
@@ -416,7 +415,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         else:
             say("note: Cloudflare has not confirmed the connection yet. If the link does not")
             say("work within two minutes, stop with Ctrl+C and start again.\n")
-        (SHARE_DATA / "current_share.txt").write_text("\n".join(lines) + "\n")
 
         while not stopping["flag"] and datetime.now() < until:
             if server.poll() is not None:
