@@ -108,9 +108,21 @@ machine, not for the open internet.
 
 ## Hosting it for other devices
 
-GitHub only stores this code; it cannot run the site. To get a public link
-that works from any device, the site can run for free on Hugging Face Spaces.
-The step-by-step guide is [deploy/huggingface/HOSTING.md](deploy/huggingface/HOSTING.md).
+GitHub only stores this code; it cannot run the site. Two ways to get a link
+that opens on any device:
+
+- **From your own computer, free.** One command opens a temporary public link
+  to the site running on your Mac, protected by an access code, a request
+  firewall and a sandbox. It works while the command runs.
+  Guide: [deploy/tunnel/SHARING.md](deploy/tunnel/SHARING.md).
+
+  ```
+  .venv/bin/python deploy/tunnel/share.py
+  ```
+
+- **On Hugging Face Spaces, paid.** Online without your computer. Since
+  mid-2026 Hugging Face requires its PRO plan for this kind of Space.
+  Guide: [deploy/huggingface/HOSTING.md](deploy/huggingface/HOSTING.md).
 
 ## Tests
 
@@ -170,6 +182,9 @@ Settings live in `.env`. Variables set in the shell take precedence.
 | `DJANGO_BEHIND_PROXY` | `False` | Trust the `X-Forwarded-Proto` header of an HTTPS proxy. Hosting only. |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | empty | Extra origins allowed to post forms, e.g. `https://*.hf.space`. Hosting only. |
 | `DJANGO_FRAME_ANCESTORS` | empty | Sites allowed to show the app in a frame. Empty means none. |
+| `DJANGO_REQUEST_FIREWALL` | `False` | Rate limits, bans and scanner-path refusal. Set by the sharing launcher. |
+| `DEMO_ACCESS_PASSWORD` | empty | Access code for the whole site. Set by the sharing launcher. |
+| `SCAN_ALLOWED_FORMATS` | empty (all) | Upload formats, e.g. `png,jpeg`. Set by the sharing launcher. |
 
 ## What is stored about a visitor
 
@@ -191,7 +206,7 @@ inference/    model loading and prediction; does not import Django
 templates/    base template and error pages
 tests/        pytest suite; tests/golden/ for real reference masks
 docs/         PLAN.md, PROGRESS.md, LIMITS.md, MANUAL_TEST.md
-deploy/       files for hosting on Hugging Face Spaces
+deploy/       sharing from this computer (tunnel/) and Hugging Face Spaces (huggingface/)
 model_store/  trained models (git-ignored)
 media/        uploaded pixel data and results (git-ignored)
 ```

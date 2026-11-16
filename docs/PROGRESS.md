@@ -309,8 +309,41 @@ and asked for it to be safe for the computer, with several layers of protection.
 - [x] 1. App layers, all off by default: request firewall (`scans/firewall.py`), access code, strict content policy, upload format allow-list, separate database and upload folder
 - [x] 2. Launcher `deploy/tunnel/share.py` with sandbox profiles for the server and the tunnel; `cloudflared` installed with Homebrew
 - [x] 3. Tests (194 passed) and a live test through a real public link
-- [ ] 4. Second live run after the launcher fix (it must not look up the new address early)
-- [ ] 5. Pages checked in a real browser under the strict content policy
-- [ ] 6. Docs: `deploy/tunnel/SHARING.md`, README, LIMITS, CLAUDE.md; correct the Hugging Face guide
-- [ ] 7. `docs/PROGRESS.md` notes; summary written
+- [x] 4. Second live run after the launcher fix (it must not look up the new address early)
+- [x] 5. Pages checked in a real browser under the strict content policy
+- [x] 6. Docs: `deploy/tunnel/SHARING.md`, README, LIMITS, CLAUDE.md; correct the Hugging Face guide
+- [x] 7. `docs/PROGRESS.md` notes; summary written
+
+### Notes
+
+- Result: `.venv/bin/python -m pytest` gives 194 passed.
+- Hugging Face: the owner created a Space, but a free account cannot run a
+  Docker Space any more (confirmed in Hugging Face's docs and forum, see the
+  correction at the top of `deploy/huggingface/HOSTING.md`). The uploaded
+  files are still in the Space `salemaker/brain-mri-demo`, which never built;
+  it can be deleted.
+- Live tests, two sessions through real `trycloudflare.com` links: access code
+  required (401 without, 200 with), scanner paths 404, DELETE 405, consent,
+  upload, mask download over HTTPS, `.mat` refused, result invisible without
+  the owner's session, ban after eight refusals (the right code then gets 429),
+  clean stop (link dead, upload and database deleted, no process left).
+- Sandbox, checked with a probe program and by a test: listing the home
+  folder, reading `.env`, writing into the code, internet access and starting
+  a shell are blocked; reading the code, writing `share_data/` and listening
+  on 127.0.0.1 are allowed. The real server (model load, prediction) runs
+  inside it.
+- Found and fixed during the live test:
+  - the tunnel program needs to listen on 127.0.0.1 for its status endpoint;
+  - looking up the new address right away made macOS cache "not found", so the
+    link failed on this Mac only. The launcher now waits for the tunnel's
+    "Registered tunnel connection" message and never resolves the name.
+- Pages were loaded in headless Chrome under the content policy (home and
+  about through the real link; result and upload from a saved copy served
+  with the same header): no violations, overlay slider works.
+- Also changed: `templates/500.html` uses the site stylesheet (no inline
+  style); `/robots.txt` disallows everything; `config.env.load_env_file`
+  tolerates an unreadable `.env`.
+- For the owner to do: turn on the macOS firewall (it is off; steps in
+  `SHARING.md`). Not changed from here because it needs the admin password.
+- Not pushed. `git push` when the owner wants GitHub to have it.
 

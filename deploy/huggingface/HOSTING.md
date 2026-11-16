@@ -1,4 +1,12 @@
-# Hosting the demo on Hugging Face Spaces (free)
+# Hosting the demo on Hugging Face Spaces (needs the PRO plan)
+
+> **Correction, 2026-11-16.** This guide was written on the assumption that a
+> Docker Space on "CPU basic" is free. It is not any more: since mid-2026
+> Hugging Face requires a paid plan (PRO for personal accounts) to create a
+> Docker Space, and a free account's Space cannot be switched to CPU basic.
+> The free alternative is sharing from your own computer:
+> [deploy/tunnel/SHARING.md](../tunnel/SHARING.md). Everything below still
+> applies if you subscribe.
 
 GitHub stores the code but cannot run it. A Hugging Face Space can: it builds a
 Docker container from four small files and gives the app a public link that
@@ -10,7 +18,7 @@ strangers can upload images. Read "What changes when it is public" below first.
 ## What you need
 
 - The code pushed to GitHub (the container downloads it from there).
-- A free Hugging Face account.
+- A Hugging Face account with the PRO plan.
 - Four files to upload to the Space:
 
 | File | Where it comes from |
@@ -30,8 +38,9 @@ names). The container reads the model name and fold number from
 2. **Create the account** at https://huggingface.co/join and confirm your email.
 3. **Create the Space** at https://huggingface.co/new-space:
    - Space name: for example `brain-mri-demo`
-   - SDK: **Docker**, template **Blank**
-   - Hardware: **CPU basic** (free)
+   - SDK: **Docker**, template **Blank** (choose this first; with Gradio selected
+     the hardware defaults to ZeroGPU, which a Docker app cannot use)
+   - Hardware: **CPU basic**
    - Visibility: **Public**
 4. **Upload the four files.** In the Space open the **Files** tab, choose
    **Add file**, then **Upload files**. Drag in all four files and click

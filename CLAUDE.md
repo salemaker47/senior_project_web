@@ -36,8 +36,16 @@ their browser.
   logger and shown as plain sentences (`scans/errors.py`).
 - Setup and usage for people: `README.md`. Limits: `docs/LIMITS.md`. Browser
   checklist: `docs/MANUAL_TEST.md`.
+- Sharing from this computer: `deploy/tunnel/share.py` (guide in
+  `SHARING.md`). It runs the site on 127.0.0.1 inside a macOS sandbox with the
+  request firewall (`scans/firewall.py`), an access code and its own data in
+  `share_data/`, and opens a Cloudflare quick tunnel. Never bind the shared
+  server to anything but 127.0.0.1, and never look up the new tunnel address
+  from this Mac right after it is created (macOS caches the "not found").
+- The site's content policy forbids inline scripts, inline styles and outside
+  resources; a test enforces it. Keep new templates and scripts within it.
 - Public hosting: `deploy/huggingface/` (Dockerfile, start script, guide in
-  `HOSTING.md`). The Space clones this repo from GitHub when it builds, so
+  `HOSTING.md`; needs Hugging Face PRO since mid-2026). The Space clones this repo from GitHub when it builds, so
   hosted code changes only after a push and a "Factory rebuild". Proxy settings
   (`DJANGO_BEHIND_PROXY`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_FRAME_ANCESTORS`)
   are off by default and must stay off for localhost.

@@ -90,7 +90,22 @@
 - Models are found when the server starts. Restart it after changing
   `model_store/`.
 
+**When shared from the owner's computer (tunnel)**
+
+- The link works only while the launcher runs and the laptop is awake, and the
+  address changes at every start. Cloudflare offers such tunnels for testing,
+  without guarantees, and can see the traffic.
+- Uploads are limited to PNG and JPEG unless `--all-formats` is given.
+- Everyone who has the access code shares one set of limits per address; a
+  whole classroom behind one network address can hit the upload limit.
+- The sandbox relies on macOS's `sandbox-exec`, which Apple marks as
+  deprecated. It was tested on the development Mac only.
+- Visitors' addresses are written to `share_data/logs/` and stay there until
+  the next session.
+
 **When hosted publicly (Hugging Face Spaces)**
+
+- Hugging Face now requires its paid PRO plan for this kind of Space.
 
 - Anyone with the link can upload. There are no accounts and no rate limit.
 - Uploads are deleted after one day and are lost at every restart of the
