@@ -354,4 +354,34 @@ far and for unnecessary and unused parts to be deleted.
 
 - [x] 1. Small leftovers: `config/asgi.py`, `ModelRegistry.clear_cache`, `InferenceResult.scan_meta`, the launcher's `current_share.txt`, settings that restated Django defaults or were never read (`MEDIA_URL`, `STATIC_ROOT`), `nibabel` from the requirements
 - [x] 2. Hugging Face deployment and the framing code that only it needed
-- [ ] 3. Docs brought in line; full test run; notes below
+- [x] 3. Docs brought in line; full test run; notes below
+
+### Notes
+
+- Method: `pyflakes` and `vulture` over all Python, a script that lists every
+  definition never referenced outside tests, and checks for unused CSS classes,
+  JavaScript functions, static files, template variables and settings. Then a
+  read-through of `scans/`, `inference/`, the settings and the launcher.
+- Result: the code was already lean. Besides step 1, the only sizeable unused
+  part was the Hugging Face deployment: it needs a paid plan and never ran.
+  Removed with it: `DJANGO_FRAME_ANCESTORS`, `frame.js`, the "open in its own
+  tab" notice and its CSS, and eight tests. The headers middleware is now
+  `SecurityHeadersMiddleware` and always sends `frame-ancestors 'none'`.
+  `tests/test_hosting.py` became `tests/test_proxy.py` (same proxy and origin
+  tests, with the tunnel's host name). To restore the deployment:
+  `git revert d9bd82c`.
+- The sections above about Hugging Face are history; the files they name no
+  longer exist.
+- `.venv/bin/python -m pytest` gives 186 passed (194 before, minus the eight
+  removed tests). A one-minute live sharing session after the cleanup: 401
+  without the code, 200 with it, scanner path 404, headers as expected, clean
+  stop.
+- `nibabel` is no longer in the requirements. Phase 4 (3D volumes) has to add
+  it back.
+- Also cleaned outside this repository: three unused items in the training
+  repository (branch `fix/review-findings`, commit `d58bc57`, 75 tests pass),
+  and `Senior_Project_local/hf_space_upload/` moved to the Trash (its model
+  file is identical to `model_store/01_dice_image_level/fold_1/`).
+- Planned, not built: a permanent `github.io` address that forwards visitors
+  to the current tunnel link. Waiting for the owner's decision.
+- Not pushed.
