@@ -121,3 +121,6 @@ their browser.
 3. Upload, predict, result page, downloads.
 4. 3D volumes (NIfTI, DICOM series).
 5. Cleanup, README, final checks.
+6. Front-door page for a permanent `github.io` address (static, nothing published).
+7. Launcher option `--publish` that keeps the front door's status up to date.
+8. Go live with the `github.io` address, measure, document (needs the owner).
