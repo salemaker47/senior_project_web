@@ -26,3 +26,6 @@ staticfiles/
 # Golden reference pairs: real dataset images and masks, valid only together
 # with the matching model in model_store/. Kept local, like model_store/.
 tests/golden/*/
+
+# Data of the public sharing mode (deploy/tunnel/): its own database, uploads, logs
+share_data/

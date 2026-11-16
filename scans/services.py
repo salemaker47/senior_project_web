@@ -45,6 +45,35 @@ SUPPORTED_FORMATS = [
     "BraTS 2020 slice .h5 file",
     "Single DICOM file",
 ]
+FORMAT_LABELS = {
+    "png": "a PNG image", "jpeg": "a JPEG image", "tiff": "a TIFF image",
+    "figshare_mat": "a FigShare .mat file", "brats_h5": "a BraTS .h5 file", "dicom": "a DICOM file",
+}
+_FORMAT_NAMES = {
+    "png": "PNG", "jpeg": "JPEG", "tiff": "TIFF", "figshare_mat": "FigShare .mat",
+    "brats_h5": "BraTS .h5", "dicom": "single DICOM",
+}
+
+
+def _join(names):
+    names = list(names)
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " or " + names[-1]
+
+
+def format_summary() -> str:
+    """Short phrase for pages and messages, following settings.SCAN_ALLOWED_FORMATS."""
+    allowed = settings.SCAN_ALLOWED_FORMATS
+    if not allowed:
+        return "PNG, JPEG, TIFF, FigShare .mat, BraTS .h5 or single DICOM files"
+    return _join(_FORMAT_NAMES.get(f, f) for f in allowed) + " files"
+
+
+def supported_formats() -> list:
+    """The list shown on the upload and about pages."""
+    allowed = settings.SCAN_ALLOWED_FORMATS
+    if not allowed:
+        return list(SUPPORTED_FORMATS)
+    return [_join(_FORMAT_NAMES.get(f, f) for f in allowed) + " of one slice"]
 
 # Model scan type (registry) -> heading of the choice group in the upload form.
 SCAN_TYPE_GROUPS = {
@@ -176,6 +205,13 @@ def parse_upload(uploaded_file):
         except Exception as exc:  # noqa: BLE001 - e.g. a damaged HDF5 container
             logger.info("upload rejected: format detection failed: %s: %s", type(exc).__name__, exc)
             raise UploadRejected(_UNREADABLE_DEFAULT) from exc
+
+        allowed = settings.SCAN_ALLOWED_FORMATS
+        if allowed and fmt not in allowed:
+            raise UploadRejected(
+                f"This site currently accepts only {format_summary()}. "
+                f"The file you chose is {FORMAT_LABELS.get(fmt, fmt)}."
+            )
 
         max_pixels = settings.SCAN_MAX_PIXELS
         if fmt in loaders.IMAGE_FORMATS:

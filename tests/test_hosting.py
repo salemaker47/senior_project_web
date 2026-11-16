@@ -125,14 +125,14 @@ def test_csrf_forms_work_even_if_the_proxy_sends_no_forwarded_proto(hosted):
 def test_framing_is_denied_by_default(client):
     response = client.get(HOME)
     assert response["X-Frame-Options"] == "DENY"
-    assert "Content-Security-Policy" not in response
+    assert response["Content-Security-Policy"].endswith("frame-ancestors 'none'")
 
 
 @pytest.mark.django_db
 def test_listed_sites_may_frame_the_app(client, settings):
     settings.FRAME_ANCESTORS = ["https://huggingface.co"]
     response = client.get(HOME)
-    assert response["Content-Security-Policy"] == "frame-ancestors 'self' https://huggingface.co"
+    assert response["Content-Security-Policy"].endswith("frame-ancestors 'self' https://huggingface.co")
     assert "X-Frame-Options" not in response
 
 

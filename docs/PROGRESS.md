@@ -300,3 +300,17 @@ Not a phase of the plan; recorded so the next session knows the state.
 - The owner still has to: push, create the Space, upload the four files
   (prepared in `Senior_Project_local/hf_space_upload/`).
 
+## Sharing from the owner's computer through a tunnel (2026-11-16)
+
+Not a phase of the plan. The owner chose this after Hugging Face turned out to
+charge for Docker Spaces (see the correction in `deploy/huggingface/HOSTING.md`),
+and asked for it to be safe for the computer, with several layers of protection.
+
+- [x] 1. App layers, all off by default: request firewall (`scans/firewall.py`), access code, strict content policy, upload format allow-list, separate database and upload folder
+- [x] 2. Launcher `deploy/tunnel/share.py` with sandbox profiles for the server and the tunnel; `cloudflared` installed with Homebrew
+- [x] 3. Tests (194 passed) and a live test through a real public link
+- [ ] 4. Second live run after the launcher fix (it must not look up the new address early)
+- [ ] 5. Pages checked in a real browser under the strict content policy
+- [ ] 6. Docs: `deploy/tunnel/SHARING.md`, README, LIMITS, CLAUDE.md; correct the Hugging Face guide
+- [ ] 7. `docs/PROGRESS.md` notes; summary written
+

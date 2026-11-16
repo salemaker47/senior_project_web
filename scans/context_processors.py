@@ -6,6 +6,7 @@ from django.conf import settings
 
 from inference import DISCLAIMER
 
+from . import services
 from .consent import has_consent
 
 DECLINED_QUERY_VALUE = "declined"
@@ -30,4 +31,5 @@ def site(request):
         "session_cookie_days": settings.SESSION_COOKIE_AGE // (24 * 60 * 60),
         "max_upload_mb": settings.SCAN_MAX_UPLOAD_BYTES // (1024 * 1024),
         "max_upload_bytes": settings.SCAN_MAX_UPLOAD_BYTES,
+        "format_summary": services.format_summary(),
     }

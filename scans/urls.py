@@ -6,6 +6,7 @@ app_name = "scans"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("robots.txt", views.robots_txt, name="robots_txt"),
     path("about/", views.about, name="about"),
     path("consent/accept/", views.consent_accept, name="consent_accept"),
     path("consent/decline/", views.consent_decline, name="consent_decline"),

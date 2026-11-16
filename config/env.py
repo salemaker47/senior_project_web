@@ -35,9 +35,15 @@ def parse_env_text(text: str) -> Dict[str, str]:
 def load_env_file(path: Union[str, Path]) -> Dict[str, str]:
     """Put the file's variables into os.environ (existing ones win). Returns what the file held."""
     path = Path(path)
-    if not path.is_file():
+    try:
+        if not path.is_file():
+            return {}
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        # Unreadable on purpose in the sandboxed sharing mode, where every
+        # setting comes from the environment and the local .env stays private.
         return {}
-    values = parse_env_text(path.read_text(encoding="utf-8"))
+    values = parse_env_text(text)
     for name, value in values.items():
         os.environ.setdefault(name, value)
     return values

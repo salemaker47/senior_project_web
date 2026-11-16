@@ -53,6 +53,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # First, so a refused request reaches nothing else. Off unless
+    # DJANGO_REQUEST_FIREWALL is set (public sharing; see scans/firewall.py).
+    "scans.firewall.RequestFirewallMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -89,7 +92,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        # DJANGO_DB_PATH: the public sharing mode keeps its own database.
+        "NAME": Path(os.environ.get("DJANGO_DB_PATH") or BASE_DIR / "db.sqlite3"),
     }
 }
 
@@ -126,7 +130,8 @@ SECURE_REFERRER_POLICY = "same-origin"
 # --------------------------------------------------------------------------- #
 # Uploaded scans and results. Not routed in urls.py on purpose: Phase 3 serves
 # these files through a view that checks the owner.
-MEDIA_ROOT = BASE_DIR / "media"
+# DJANGO_MEDIA_ROOT: the public sharing mode keeps its own upload folder.
+MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT") or BASE_DIR / "media")
 MEDIA_URL = "/media/"
 
 # Trained checkpoints: <MODEL_STORE_DIR>/<model_key>/fold_<k>/best_model.pt
@@ -142,6 +147,9 @@ MODEL_STORE_DIR = BASE_DIR / (os.environ.get("MODEL_STORE_DIR") or "model_store"
 #   DATA_UPLOAD_MAX_NUMBER_FIELDS form fields per request
 SCAN_MAX_UPLOAD_BYTES = env_int("SCAN_MAX_UPLOAD_BYTES", 20 * 1024 * 1024)      # 20 MB
 SCAN_MAX_PIXELS = 4096 * 4096
+# Formats the upload accepts (names as in inference.loaders). Empty = all.
+# Public sharing narrows this to png,jpeg: fewer file parsers face strangers.
+SCAN_ALLOWED_FORMATS = env_list("SCAN_ALLOWED_FORMATS", [])
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024                                     # 5 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1 * 1024 * 1024                                     # 1 MB
 DATA_UPLOAD_MAX_NUMBER_FILES = 1
@@ -168,6 +176,23 @@ USE_TZ = True
 # --------------------------------------------------------------------------- #
 # Static files (our own CSS and JavaScript; no CDN, no build step)
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+# Request firewall and access code (public sharing only; scans/firewall.py)
+# --------------------------------------------------------------------------- #
+REQUEST_FIREWALL = env_bool("DJANGO_REQUEST_FIREWALL", False)
+FIREWALL_REQUESTS_PER_MINUTE = env_int("FIREWALL_REQUESTS_PER_MINUTE", 120)     # per address
+FIREWALL_UPLOADS_PER_MINUTE = env_int("FIREWALL_UPLOADS_PER_MINUTE", 6)         # per address
+FIREWALL_UPLOADS_PER_HOUR = env_int("FIREWALL_UPLOADS_PER_HOUR", 40)            # per address
+FIREWALL_GLOBAL_UPLOADS_PER_MINUTE = env_int("FIREWALL_GLOBAL_UPLOADS_PER_MINUTE", 30)
+FIREWALL_STRIKES_BEFORE_BAN = env_int("FIREWALL_STRIKES_BEFORE_BAN", 8)
+FIREWALL_BAN_SECONDS = env_int("FIREWALL_BAN_SECONDS", 900)
+# HTTP Basic password for the whole site. Empty = no password.
+ACCESS_USER = os.environ.get("DEMO_ACCESS_USER") or "demo"
+ACCESS_PASSWORD = os.environ.get("DEMO_ACCESS_PASSWORD", "")
+# Ask search engines not to index the site (header on every response).
+NO_INDEX = env_bool("DJANGO_NO_INDEX", False)
+
+
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -185,6 +210,6 @@ LOGGING = {
         "console": {"class": "logging.StreamHandler", "formatter": "plain"},
     },
     "loggers": {
-        "scans": {"handlers": ["console"], "level": "INFO"},
+        "scans": {"handlers": ["console"], "level": "INFO"},      # includes scans.firewall
     },
 }

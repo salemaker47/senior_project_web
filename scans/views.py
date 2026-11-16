@@ -30,6 +30,12 @@ from .uploadhandlers import TOO_LARGE_ATTR
 # Pages everyone can read
 # --------------------------------------------------------------------------- #
 @require_GET
+def robots_txt(request):
+    """A demo with visitors' uploads has no business in a search index."""
+    return HttpResponse("User-agent: *\nDisallow: /\n", content_type="text/plain")
+
+
+@require_GET
 def home(request):
     return render(request, "scans/home.html", {
         "data_deleted": request.GET.get("deleted") == "1",
@@ -42,7 +48,7 @@ def about(request):
     return render(request, "scans/about.html", {
         "models": served["models"],
         "models_error": served["error"],
-        "supported_formats": services.SUPPORTED_FORMATS,
+        "supported_formats": services.supported_formats(),
     })
 
 
@@ -142,7 +148,7 @@ def upload(request):
     return render(request, "scans/upload.html", {
         "form": form,
         "selected_model": selected,
-        "supported_formats": services.SUPPORTED_FORMATS,
+        "supported_formats": services.supported_formats(),
         "models_error": services.list_served_models()["error"],
     }, status=status)
 
