@@ -86,7 +86,7 @@ def test_scanner_paths_get_a_bare_404(fw, client, path):
 
 @pytest.mark.django_db
 def test_normal_pages_and_robots_are_not_probes(fw, client):
-    for path in (HOME, ABOUT, "/robots.txt", "/static/scans/css/site.css", "/static/scans/js/frame.js"):
+    for path in (HOME, ABOUT, "/robots.txt", "/static/scans/css/site.css", "/static/scans/js/site.js"):
         assert client.get(path, **_from("203.0.113.9")).status_code == 200
     robots = client.get("/robots.txt", **_from("203.0.113.9")).content.decode()
     assert "Disallow: /" in robots

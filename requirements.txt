@@ -25,7 +25,7 @@ pillow
 h5py
 pydicom
 
-# Production web server, used when the site is hosted (deploy/huggingface/).
+# Production web server, used by the sharing launcher (deploy/tunnel/share.py).
 gunicorn
 
 pytest

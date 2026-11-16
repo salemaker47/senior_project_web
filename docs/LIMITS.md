@@ -85,7 +85,7 @@
   until it is done. The first prediction after a start also loads the model.
 - It is built for one or a few visitors on one machine and a SQLite database.
   `runserver` is Django's development server; do not expose that to the
-  internet. For a public link use the hosting setup in `deploy/huggingface/`,
+  internet. For a public link use the sharing launcher in `deploy/tunnel/`,
   which runs a production server with debug off and secure cookies.
 - Models are found when the server starts. Restart it after changing
   `model_store/`.
@@ -102,18 +102,6 @@
   deprecated. It was tested on the development Mac only.
 - Visitors' addresses are written to `share_data/logs/` and stay there until
   the next session.
-
-**When hosted publicly (Hugging Face Spaces)**
-
-- Hugging Face now requires its paid PRO plan for this kind of Space.
-
-- Anyone with the link can upload. There are no accounts and no rate limit.
-- Uploads are deleted after one day and are lost at every restart of the
-  Space; a free Space has no permanent disk.
-- A free Space sleeps when nobody visits and takes about a minute to wake.
-- One server process on a shared CPU: fine for a demo, slow under load.
-- The container image has not been built on the development machine. The
-  server, start script and proxy behaviour were tested locally without Docker.
 
 **Privacy**
 

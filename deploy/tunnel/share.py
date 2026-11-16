@@ -182,7 +182,6 @@ def server_env(share_data: Path, access_code: str, all_formats: bool) -> Dict[st
         "DJANGO_SECURE_COOKIES": "True",
         "DJANGO_ALLOWED_HOSTS": f"{TUNNEL_HOST_SUFFIX},localhost,127.0.0.1",
         "DJANGO_CSRF_TRUSTED_ORIGINS": f"https://*{TUNNEL_HOST_SUFFIX}",
-        "DJANGO_FRAME_ANCESTORS": "",
         "DJANGO_REQUEST_FIREWALL": "True",
         "DJANGO_NO_INDEX": "True",
         "DEMO_ACCESS_USER": ACCESS_USER,

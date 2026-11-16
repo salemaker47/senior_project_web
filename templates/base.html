@@ -9,19 +9,6 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
-  {# Shown by frame.js only when the site is displayed inside another page. #}
-  <div id="framed-notice" class="framed-notice" hidden>
-    <div class="wrap">
-      <p>
-        You are viewing this demo inside another page. The session cookie does not work
-        here, so uploading is not possible.
-      </p>
-      <a class="btn btn--primary btn--small" id="framed-open" href="{{ request.get_full_path }}"
-         target="_blank" rel="noopener">Open the demo in its own tab</a>
-    </div>
-  </div>
-  <script src="{% static 'scans/js/frame.js' %}"></script>
-
   <header class="site-header">
     <div class="wrap site-header__inner">
       <a class="brand" href="{% url 'scans:home' %}">

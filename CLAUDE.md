@@ -44,11 +44,10 @@ their browser.
   from this Mac right after it is created (macOS caches the "not found").
 - The site's content policy forbids inline scripts, inline styles and outside
   resources; a test enforces it. Keep new templates and scripts within it.
-- Public hosting: `deploy/huggingface/` (Dockerfile, start script, guide in
-  `HOSTING.md`; needs Hugging Face PRO since mid-2026). The Space clones this repo from GitHub when it builds, so
-  hosted code changes only after a push and a "Factory rebuild". Proxy settings
-  (`DJANGO_BEHIND_PROXY`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_FRAME_ANCESTORS`)
-  are off by default and must stay off for localhost.
+- Proxy settings (`DJANGO_BEHIND_PROXY`, `DJANGO_CSRF_TRUSTED_ORIGINS`) are off
+  by default and must stay off for localhost; only the sharing launcher sets
+  them. The Hugging Face deployment was removed on 2026-11-17 (it needs a paid
+  plan and never ran); it is in git history before that date.
 
 ## Consent rules (from Phase 2, binding for later phases)
 

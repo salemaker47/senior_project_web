@@ -1,4 +1,4 @@
-"""scans/middleware.py — CSRF without a cookie, and correct caching headers."""
+"""scans/middleware.py — CSRF without a cookie, security headers, and correct caching headers."""
 
 from __future__ import annotations
 
@@ -32,36 +32,27 @@ class ConsentAwareCsrfViewMiddleware(CsrfViewMiddleware):
 
 
 # The site loads only its own files: no CDN, no inline script or style, no
-# plugins, forms post only to itself. A browser enforcing this cannot be made
-# to run injected script even if some text were ever rendered unescaped.
+# plugins, forms post only to itself, and no other page may show it in a frame.
+# A browser enforcing this cannot be made to run injected script even if some
+# text were ever rendered unescaped.
 CONTENT_POLICY = (
     "default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; "
-    "object-src 'none'; base-uri 'self'; form-action 'self'"
+    "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 )
 PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 
 
-class FrameAncestorsMiddleware(XFrameOptionsMiddleware):
+class SecurityHeadersMiddleware(XFrameOptionsMiddleware):
     """
-    Browser-side protection headers on every response.
-
-    Content-Security-Policy: CONTENT_POLICY plus who may show the site in a
-    frame. Default: nobody (`frame-ancestors 'none'` and Django's usual
-    `X-Frame-Options: DENY`). When settings.FRAME_ANCESTORS lists sites, those
-    and the site itself are allowed; X-Frame-Options cannot name a site, so it
-    is left out then. A hosting page such as huggingface.co shows the app in a
-    frame, where the session cookie does not work, so base.html then tells the
-    visitor to open the site in its own tab (static/scans/js/frame.js).
+    Browser-side protection headers on every response: the content policy
+    above, Django's `X-Frame-Options: DENY` (for browsers that ignore
+    `frame-ancestors`), a permissions policy, and `X-Robots-Tag` when
+    settings.NO_INDEX is on.
     """
 
     def process_response(self, request, response):
-        ancestors = settings.FRAME_ANCESTORS
-        if ancestors:
-            frame_rule = "frame-ancestors 'self' " + " ".join(ancestors)
-        else:
-            frame_rule = "frame-ancestors 'none'"
-            response = super().process_response(request, response)
-        response.headers["Content-Security-Policy"] = f"{CONTENT_POLICY}; {frame_rule}"
+        response = super().process_response(request, response)
+        response.headers["Content-Security-Policy"] = CONTENT_POLICY
         response.headers.setdefault("Permissions-Policy", PERMISSIONS_POLICY)
         if settings.NO_INDEX:
             response.headers["X-Robots-Tag"] = "noindex, nofollow"

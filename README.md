@@ -108,21 +108,14 @@ machine, not for the open internet.
 
 ## Hosting it for other devices
 
-GitHub only stores this code; it cannot run the site. Two ways to get a link
-that opens on any device:
+GitHub only stores this code; it cannot run the site. One command opens a
+temporary public link to the site running on your Mac, protected by an access
+code, a request firewall and a sandbox. It is free and works while the command
+runs. Guide: [deploy/tunnel/SHARING.md](deploy/tunnel/SHARING.md).
 
-- **From your own computer, free.** One command opens a temporary public link
-  to the site running on your Mac, protected by an access code, a request
-  firewall and a sandbox. It works while the command runs.
-  Guide: [deploy/tunnel/SHARING.md](deploy/tunnel/SHARING.md).
-
-  ```
-  .venv/bin/python deploy/tunnel/share.py
-  ```
-
-- **On Hugging Face Spaces, paid.** Online without your computer. Since
-  mid-2026 Hugging Face requires its PRO plan for this kind of Space.
-  Guide: [deploy/huggingface/HOSTING.md](deploy/huggingface/HOSTING.md).
+```
+.venv/bin/python deploy/tunnel/share.py
+```
 
 ## Tests
 
@@ -138,7 +131,7 @@ The skipped test is the golden test. It compares the site's output with masks
 predicted in the training repository and runs once you add real files, as
 described in [tests/golden/README.md](tests/golden/README.md). On the
 development machine the pairs for `01_dice_image_level` are present, so it
-runs there and the count is 133 passed.
+runs there and the count is 186 passed with none skipped.
 
 ## Command-line tool
 
@@ -179,9 +172,8 @@ Settings live in `.env`. Variables set in the shell take precedence.
 | `DJANGO_SECURE_COOKIES` | `False` | Send the session cookie over HTTPS only. |
 | `MODEL_STORE_DIR` | `model_store` | Folder with the model files. |
 | `SCAN_MAX_UPLOAD_BYTES` | `20971520` | Largest upload in bytes. |
-| `DJANGO_BEHIND_PROXY` | `False` | Trust the `X-Forwarded-Proto` header of an HTTPS proxy. Hosting only. |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | empty | Extra origins allowed to post forms, e.g. `https://*.hf.space`. Hosting only. |
-| `DJANGO_FRAME_ANCESTORS` | empty | Sites allowed to show the app in a frame. Empty means none. |
+| `DJANGO_BEHIND_PROXY` | `False` | Trust the `X-Forwarded-Proto` header of an HTTPS proxy. Set by the sharing launcher. |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | empty | Extra origins allowed to post forms. Set by the sharing launcher. |
 | `DJANGO_REQUEST_FIREWALL` | `False` | Rate limits, bans and scanner-path refusal. Set by the sharing launcher. |
 | `DEMO_ACCESS_PASSWORD` | empty | Access code for the whole site. Set by the sharing launcher. |
 | `SCAN_ALLOWED_FORMATS` | empty (all) | Upload formats, e.g. `png,jpeg`. Set by the sharing launcher. |
@@ -206,7 +198,7 @@ inference/    model loading and prediction; does not import Django
 templates/    base template and error pages
 tests/        pytest suite; tests/golden/ for real reference masks
 docs/         PLAN.md, PROGRESS.md, LIMITS.md, MANUAL_TEST.md
-deploy/       sharing from this computer (tunnel/) and Hugging Face Spaces (huggingface/)
+deploy/       sharing from this computer through a temporary public link (tunnel/)
 model_store/  trained models (git-ignored)
 media/        uploaded pixel data and results (git-ignored)
 ```

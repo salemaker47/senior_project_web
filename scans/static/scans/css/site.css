@@ -254,9 +254,3 @@ form { margin: 0; }
   .scan-card__thumb { width: 4rem; height: 4rem; }
   .scan-card__actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
-
-/* Shown inside a frame (hosting page): cookies cannot work there ----------- */
-.framed-notice { background: var(--warn-soft); border-bottom: 1px solid var(--warn-border); }
-.framed-notice .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1.5rem; padding-top: 0.7rem; padding-bottom: 0.7rem; }
-.framed-notice p { margin: 0; }
-.is-framed #cookie-banner { display: none; }

@@ -353,5 +353,5 @@ Not a phase of the plan. The owner asked for a review of everything written so
 far and for unnecessary and unused parts to be deleted.
 
 - [x] 1. Small leftovers: `config/asgi.py`, `ModelRegistry.clear_cache`, `InferenceResult.scan_meta`, the launcher's `current_share.txt`, settings that restated Django defaults or were never read (`MEDIA_URL`, `STATIC_ROOT`), `nibabel` from the requirements
-- [ ] 2. Hugging Face deployment and the framing code that only it needed
+- [x] 2. Hugging Face deployment and the framing code that only it needed
 - [ ] 3. Docs brought in line; full test run; notes below
