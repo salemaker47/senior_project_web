@@ -383,5 +383,17 @@ far and for unnecessary and unused parts to be deleted.
   and `Senior_Project_local/hf_space_upload/` moved to the Trash (its model
   file is identical to `model_store/01_dice_image_level/fold_1/`).
 - Planned, not built: a permanent `github.io` address that forwards visitors
-  to the current tunnel link. Waiting for the owner's decision.
+  to the current tunnel link. Written into `docs/PLAN.md` as Phases 6 to 8.
 - Not pushed.
+
+## Phase 6 — Front-door page for the `github.io` address
+
+- [ ] not started (steps in `docs/PLAN.md`)
+
+## Phase 7 — Launcher option `--publish`
+
+- [ ] not started (steps in `docs/PLAN.md`)
+
+## Phase 8 — Go live, measure, document
+
+- [ ] not started (steps in `docs/PLAN.md`; needs the owner for the pushes)
