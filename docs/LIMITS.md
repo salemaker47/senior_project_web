@@ -103,6 +103,26 @@
 - Visitors' addresses are written to `share_data/logs/` and stay there until
   the next session.
 
+**The permanent address (`--publish`)**
+
+- It forwards; it does not show the site itself. After forwarding the address
+  bar shows the `trycloudflare.com` link, and visitors who bookmark that lose
+  it at the next session. They should bookmark the github.io address.
+- A start or stop reaches the page about 30 seconds later (27 to 35 seconds in
+  four measurements on 2026-11-17), and an open page checks every 30 seconds:
+  up to about a minute in total.
+- GitHub allows about 10 page updates per hour (a soft limit); each session
+  uses two.
+- The page and its status file are public: anyone can see when the laptop is
+  sharing, the current link and the stop time. The access code is the only
+  gate.
+- GitHub's cache ignores the `?t=` suffix the page adds to the status request;
+  fresh data depends on GitHub clearing its cache after each update, which it
+  did every time in the measurements.
+- Publishing needs a terminal in which `git push` works.
+- Checked from the development Mac through the public internet, not from a
+  phone on another network.
+
 **Privacy**
 
 - The uploaded file is discarded after reading, so DICOM tags are not kept.

@@ -39,29 +39,55 @@ Options:
 | `--open` | no access code: anyone who has the link gets in |
 | `--all-formats` | also accept `.mat`, `.h5`, TIFF and DICOM uploads |
 | `--no-sandbox` | run without the sandbox (not recommended) |
-| `--publish` | also update the permanent address (see below; not switched on yet) |
+| `--publish` | also update the permanent address (see below) |
 
 One-time requirement: the tunnel tool, installed with `brew install cloudflared`.
 
-## The permanent address (being built, not switched on yet)
+## The permanent address
 
-The link above is new at every start. `--publish` is the launcher's half of a
-permanent address, `https://salemaker47.github.io/senior_project_web/`: a small
-page on GitHub that forwards visitors to the current link, or says "offline".
+The link above is new at every start. For an address that never changes, start
+the launcher with `--publish`:
 
-- At start the launcher writes the current link and the stop time to the
-  `gh-pages` branch of the repository on GitHub; at stop it writes "offline".
-  It uses your saved GitHub login, like `git push` does.
-- The access code is never written there. `--publish` cannot be combined with
-  `--open`, because the page is public and the code is then the only gate.
-- That branch always holds a single commit, so GitHub keeps no list of when
-  you shared or of old links. The launcher leaves the branch alone if it finds
-  files there that it did not put there.
-- If GitHub cannot be reached, you get a warning and the session goes on with
-  the normal link.
+```
+.venv/bin/python deploy/tunnel/share.py --publish
+```
 
-It does nothing useful until GitHub Pages is switched on for the repository.
-That is the next step of the plan (`docs/PLAN.md`, Phase 8).
+Then give visitors this address, the user name and the access code:
+
+```
+https://salemaker47.github.io/senior_project_web/
+```
+
+It is a small page on GitHub. While you share, it says "The demo is online"
+and forwards visitors to the current link after five seconds. Otherwise it
+says "The demo is offline right now" and checks again every 30 seconds.
+
+- **Timing.** A start or stop shows on the page about 30 seconds after the
+  launcher reports it (measured: 27 to 35 seconds). A page that is already
+  open notices within another 30 seconds. So a visitor waits about one minute
+  at most.
+- **Where it runs from.** Start the launcher from a terminal in which
+  `git push` works for this repository. It uses your saved GitHub login.
+- **If GitHub cannot be reached**, the launcher prints a warning and the
+  session goes on; give visitors the normal link. If "offline" cannot be
+  written at the end, the page still turns offline by itself at the stop time.
+- **How often.** Each session updates GitHub twice. GitHub allows about 10
+  updates of a page per hour, so start at most five sessions an hour.
+- **What becomes public** (the repository is public): that you are sharing
+  right now, the current link and the planned stop time. Not the access code:
+  it is never written there. That is also why `--publish` cannot be combined
+  with `--open`.
+- **No history.** The `gh-pages` branch always holds a single commit, which
+  each update replaces, so GitHub keeps no list of when you shared or of old
+  links. The launcher leaves the branch alone if it finds files there that it
+  did not put there.
+- **After forwarding** the browser's address bar shows the
+  `trycloudflare.com` link, not the github.io address.
+
+GitHub Pages switched itself on when the launcher first created the
+`gh-pages` branch. If it ever gets switched off: on GitHub open the
+repository's **Settings**, then **Pages**, choose "Deploy from a branch",
+branch `gh-pages`, folder `/ (root)`, and **Save**.
 
 ## What protects your computer
 
@@ -145,3 +171,5 @@ refused and how many addresses it banned. The logs of the last session stay in
 | "Too many bad requests from your address" | That address was banned for 15 minutes after repeated refusals |
 | The site says "No trained models are installed yet" | Copy a model into `model_store/` first (see the README) |
 | The link stopped working | The laptop slept, the network changed or the time limit passed. Start again. |
+| "warning: the front door could not be updated" | GitHub was not reachable or the login did not work. Visitors can use the link; check that `git push` works in this terminal |
+| The permanent address still says "offline" | Wait a minute and reload. Check that the box printed "forwards here in about a minute" |

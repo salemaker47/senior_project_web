@@ -489,5 +489,57 @@ far and for unnecessary and unused parts to be deleted.
 - [x] 2. Owner runs `share.py --publish` once (creates `gh-pages` on GitHub) and switches GitHub Pages on
 - [x] 3. Live checks: permanent address from a phone on mobile data, access code, upload, offline after Ctrl+C, offline after the time limit
 - [x] 4. Delay measured from the launcher's push to the page showing the change
-- [ ] 5. Docs: `SHARING.md`, `README.md`, `docs/LIMITS.md`, `docs/MANUAL_TEST.md`
-- [ ] 6. Notes below; summary written
+- [x] 5. Docs: `SHARING.md`, `README.md`, `docs/LIMITS.md`, `docs/MANUAL_TEST.md`
+- [x] 6. Notes below; summary written
+
+### Notes
+
+- The owner asked for the whole phase to be done from the terminal instead of
+  by hand. The assistant's shell could use the GitHub login saved in the
+  macOS Keychain for `git push`, so it pushed `main` and ran the sessions.
+- Before the push, the 14 outgoing commits were checked: no `.env`, database,
+  model, upload, `share_data/` or golden files, and no real secrets (only the
+  made-up codes in the tests).
+- GitHub Pages: reading the saved login to switch Pages on through GitHub's
+  API was refused by the assistant's permission system, and was not tried any
+  other way. It was not needed: GitHub switched Pages on by itself when the
+  launcher first pushed `gh-pages` (the page was served 25 seconds later).
+- Live checks, all through the real public addresses, from the development
+  Mac (not from a phone on another network; that check is in
+  `docs/MANUAL_TEST.md` for the owner):
+  - github.io serves `index.html`, `door.js`, `door.css`, `status.json` and
+    `.nojekyll`; the served `door.js` is byte-identical to the repository's;
+  - the published status holds the current link and not the access code;
+  - in headless Chrome the github.io page shows "online" with the current
+    link, then forwards; the server log shows the browser arriving at the demo
+    and being asked for the code (401);
+  - the link itself: 401 without the code and with a wrong one, 200 with the
+    right one, scanner path 404; consent, upload, prediction and mask
+    download through the link;
+  - stop as with Ctrl+C: the launcher printed "the front door says
+    'offline'", the old link answers 530, the page shows "offline" in a
+    browser;
+  - a 3-minute session that ended by itself: online, then offline;
+  - `gh-pages` holds one commit after four updates and none of the old links;
+    `main` untouched; no process left on the Mac.
+- Delay from the launcher writing the status to github.io serving it (a
+  monitor polled every 5 seconds, so each value is within about 5 seconds):
+
+  | Update | Written (UTC) | On GitHub | Served by github.io | Delay |
+  |---|---|---|---|---|
+  | online, first ever (Pages switched itself on) | 17:27:15 | 17:27:22 | 17:27:47 | 32 s |
+  | offline after Ctrl+C | 17:28:56 | 17:29:05 | 17:29:23 | 27 s |
+  | online | 17:30:29 | 17:30:38 | 17:31:02 | 33 s |
+  | offline after the time limit | 17:33:29 | 17:33:34 | 17:34:04 | 35 s |
+
+  An open page checks every 30 seconds, so a visitor sees a change within
+  about a minute.
+- GitHub's cache: `Cache-Control: max-age=600`, and the `?t=` suffix the page
+  adds does not bypass it (a never-used suffix came back as a cache hit).
+  Fresh data comes from GitHub clearing its cache after each update, which it
+  did every time. The suffix and `cache: "no-store"` still keep the visitor's
+  own browser from reusing an old copy.
+- Four page updates were used in this hour (GitHub's soft limit is 10).
+- `.venv/bin/python -m pytest` gives 217 passed; no code changed in this
+  phase.
+- Pushed to GitHub at the owner's request: `main` and `gh-pages`.

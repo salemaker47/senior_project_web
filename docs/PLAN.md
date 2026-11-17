@@ -173,6 +173,14 @@ VS Code terminal and not in the assistant's shell.
 Done when the permanent address opens the demo from another device while the
 laptop is sharing, and shows "offline" after the session stops.
 
+As done: the owner asked for all of it to be done from the terminal. The
+assistant's shell could push with the login saved in the Keychain, so it ran
+the push and the sessions. Switching Pages on through GitHub's API was refused
+by the assistant's permission system, but was not needed: GitHub switched
+Pages on by itself when the `gh-pages` branch first appeared. The checks ran
+from the development Mac through the public internet; a phone on another
+network was not used.
+
 Known limits to write into `docs/LIMITS.md` in Phase 8: the address bar shows
 the `trycloudflare.com` link after forwarding; GitHub needs about a minute to
 show a status change (soft limit of 10 page builds per hour, two per session);

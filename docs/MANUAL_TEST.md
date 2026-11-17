@@ -91,3 +91,15 @@ Open http://127.0.0.1:8001/. A `status.json` in that folder is git-ignored.
 - [ ] Set `until` to the future again and `url` to `https://example.com`. The page says offline: it forwards to `trycloudflare.com` addresses only.
 - [ ] Delete `status.json` and stop the file server with Ctrl+C.
 
+## Permanent address (live)
+
+About five minutes. Needs a phone with mobile data (Wi-Fi off) and a PNG of a
+brain slice on it.
+
+- [ ] `.venv/bin/python deploy/tunnel/share.py --publish --hours 1` prints the box with `Permanent: https://salemaker47.github.io/senior_project_web/` and "forwards here in about a minute", and no warning.
+- [ ] On the phone open https://salemaker47.github.io/senior_project_web/. Within a minute it says "The demo is online" and forwards after five seconds.
+- [ ] The browser asks for a user name and password. `demo` and the access code get in.
+- [ ] Accept the cookie, upload the PNG: the result page shows the mask.
+- [ ] Open the github.io address again in a second tab. Press Ctrl+C in the terminal. The launcher prints "the front door says 'offline'", and within about a minute the second tab says "The demo is offline right now".
+- [ ] `.venv/bin/python deploy/tunnel/share.py --publish --hours 0.05` and wait three minutes: the page goes online and, after the automatic stop, offline again.
+

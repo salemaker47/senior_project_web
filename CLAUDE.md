@@ -42,11 +42,12 @@ their browser.
   `share_data/`, and opens a Cloudflare quick tunnel. Never bind the shared
   server to anything but 127.0.0.1, and never look up the new tunnel address
   from this Mac right after it is created (macOS caches the "not found").
-- Permanent address (Phases 6 to 8): `deploy/pages/` is a static front-door
-  page for GitHub Pages; `deploy/tunnel/publish.py` writes it and a
+- Permanent address (live since Phase 8): `https://salemaker47.github.io/senior_project_web/`.
+  `deploy/pages/` is a static front-door page for GitHub Pages; `deploy/tunnel/publish.py` writes it and a
   `status.json` to the `gh-pages` branch as that branch's single commit (a
   guarded forced push, so no history of sessions is kept). The access code must
-  never reach that branch. `door.js`, `publish.py` and `share.py` share one
+  never reach that branch. GitHub Pages serves the branch's root; it switched
+  itself on when the branch was first pushed. `door.js`, `publish.py` and `share.py` share one
   pattern for the sharing link; tests keep them equal.
 - The site's content policy forbids inline scripts, inline styles and outside
   resources; a test enforces it. Keep new templates and scripts within it.

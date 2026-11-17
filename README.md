@@ -117,9 +117,10 @@ runs. Guide: [deploy/tunnel/SHARING.md](deploy/tunnel/SHARING.md).
 .venv/bin/python deploy/tunnel/share.py
 ```
 
-A permanent address that forwards to the current link is being built: the
-front-door page is in `deploy/pages/` and the launcher has the option
-`--publish`, but GitHub Pages is not switched on yet (see the guide).
+With `--publish` the site also gets a permanent address,
+https://salemaker47.github.io/senior_project_web/, a page on GitHub that
+forwards visitors to the current link while you share and says "offline"
+otherwise. Details in the guide.
 
 ## Tests
 
@@ -206,7 +207,7 @@ templates/    base template and error pages
 tests/        pytest suite; tests/golden/ for real reference masks
 docs/         PLAN.md, PROGRESS.md, LIMITS.md, MANUAL_TEST.md
 deploy/       sharing from this computer through a temporary public link (tunnel/);
-              front-door page for a permanent address, not published yet (pages/)
+              front-door page for the permanent github.io address (pages/)
 model_store/  trained models (git-ignored)
 media/        uploaded pixel data and results (git-ignored)
 ```
