@@ -389,7 +389,7 @@ far and for unnecessary and unused parts to be deleted.
 ## Phase 6 — Front-door page for the `github.io` address
 
 - [x] 1. `deploy/pages/`: `index.html`, `door.css`, `door.js`, `status.example.json`; `status.json` there is git-ignored
-- [ ] 2. Tests in `tests/test_pages.py`
+- [x] 2. Tests in `tests/test_pages.py`
 - [ ] 3. Browser check, served locally: no status file, future time, past time, foreign address; forwarding
 - [ ] 4. The checks added to `docs/MANUAL_TEST.md`
 - [ ] 5. Notes below; summary written

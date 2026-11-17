@@ -125,13 +125,16 @@ runs. Guide: [deploy/tunnel/SHARING.md](deploy/tunnel/SHARING.md).
 
 The tests need no model files. They build a small checkpoint with random
 weights in the same layout as the real ones. Expect about ten seconds and one
-skipped test.
+or two skipped tests:
 
-The skipped test is the golden test. It compares the site's output with masks
-predicted in the training repository and runs once you add real files, as
-described in [tests/golden/README.md](tests/golden/README.md). On the
-development machine the pairs for `01_dice_image_level` are present, so it
-runs there and the count is 186 passed with none skipped.
+- The golden test compares the site's output with masks predicted in the
+  training repository. It runs once you add real files, as described in
+  [tests/golden/README.md](tests/golden/README.md).
+- One test of the front-door page (`deploy/pages/`) runs its script in Chrome
+  and is skipped where Chrome is not installed.
+
+On the development machine both run, and the count is 195 passed with none
+skipped.
 
 ## Command-line tool
 
