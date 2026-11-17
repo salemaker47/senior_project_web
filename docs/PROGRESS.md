@@ -390,8 +390,8 @@ far and for unnecessary and unused parts to be deleted.
 
 - [x] 1. `deploy/pages/`: `index.html`, `door.css`, `door.js`, `status.example.json`; `status.json` there is git-ignored
 - [x] 2. Tests in `tests/test_pages.py`
-- [ ] 3. Browser check, served locally: no status file, future time, past time, foreign address; forwarding
-- [ ] 4. The checks added to `docs/MANUAL_TEST.md`
+- [x] 3. Browser check, served locally: no status file, future time, past time, foreign address; forwarding
+- [x] 4. The checks added to `docs/MANUAL_TEST.md`
 - [ ] 5. Notes below; summary written
 
 ## Phase 7 — Launcher option `--publish`

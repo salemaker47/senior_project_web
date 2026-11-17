@@ -71,3 +71,23 @@ tools open on the cookie list (Chrome: Application, Cookies).
 - [ ] `.venv/bin/python -m inference predict <file> --model <model_key> --out out/` writes `mask.png`, `overlay.png` and `summary.json`.
 - [ ] `.venv/bin/python manage.py purge_old_scans --days 7 --dry-run` prints the counts and deletes nothing.
 - [ ] `.venv/bin/python -m pytest` passes.
+
+## Front-door page (`deploy/pages/`)
+
+The page for the permanent `github.io` address. It is not published yet, so
+check it on this machine. In a second terminal:
+
+```
+cd deploy/pages
+python3 -m http.server 8001 --bind 127.0.0.1
+```
+
+Open http://127.0.0.1:8001/. A `status.json` in that folder is git-ignored.
+
+- [ ] Without `status.json` the page says "The demo is offline right now" and shows when it last checked.
+- [ ] Copy `status.example.json` to `status.json` and set `until` to a time one hour from now (`date -u -v+1H +%Y-%m-%dT%H:%M:%SZ` prints one). Within 30 seconds the page says "The demo is online", counts down from 5 and leaves for the example address. That address does not exist, so the browser then shows an error; this is expected.
+- [ ] Go to the page again and click "Stay on this page" during the countdown. The page stays, and "Open the demo now" still leads to the address.
+- [ ] Set `until` to a time in the past. Within 30 seconds the page says offline.
+- [ ] Set `until` to the future again and `url` to `https://example.com`. The page says offline: it forwards to `trycloudflare.com` addresses only.
+- [ ] Delete `status.json` and stop the file server with Ctrl+C.
+
