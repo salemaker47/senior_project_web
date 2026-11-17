@@ -201,7 +201,8 @@ inference/    model loading and prediction; does not import Django
 templates/    base template and error pages
 tests/        pytest suite; tests/golden/ for real reference masks
 docs/         PLAN.md, PROGRESS.md, LIMITS.md, MANUAL_TEST.md
-deploy/       sharing from this computer through a temporary public link (tunnel/)
+deploy/       sharing from this computer through a temporary public link (tunnel/);
+              front-door page for a permanent address, not published yet (pages/)
 model_store/  trained models (git-ignored)
 media/        uploaded pixel data and results (git-ignored)
 ```

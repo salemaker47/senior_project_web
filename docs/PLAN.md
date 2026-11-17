@@ -118,6 +118,9 @@ Done when the page shows the right state in all four cases, served locally.
 
 1. `deploy/tunnel/publish.py`, standard library only:
    - `build_status(online, url, until)` returns the dictionary of Phase 6.
+     As built in Phase 6, the page believes a status only if both times are
+     written exactly as `YYYY-MM-DDTHH:MM:SSZ` (UTC) and the stop time is at
+     most 13 hours away; a test must tie the launcher's output to that.
    - `publish(status, ...)` keeps its own checkout of the `gh-pages` branch in
      `share_data/pages/`, creates the branch if the remote has none, copies
      `deploy/pages/` into it, writes `status.json`, commits and pushes.

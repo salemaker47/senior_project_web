@@ -392,7 +392,40 @@ far and for unnecessary and unused parts to be deleted.
 - [x] 2. Tests in `tests/test_pages.py`
 - [x] 3. Browser check, served locally: no status file, future time, past time, foreign address; forwarding
 - [x] 4. The checks added to `docs/MANUAL_TEST.md`
-- [ ] 5. Notes below; summary written
+- [x] 5. Notes below; summary written
+
+### Notes
+
+- Result: `.venv/bin/python -m pytest` gives 195 passed (186 before, plus 9 in
+  `tests/test_pages.py`). One of the new tests runs `decide()` from `door.js`
+  in headless Chrome with 30 status values and is skipped where Chrome is not
+  installed. Breaking the address check on purpose made that test fail.
+- Nothing is published: no branch was created, nothing was pushed, GitHub
+  Pages is not switched on.
+- The page forwards only when all of this holds: `online` is the value true,
+  `url` is `https://<name>.trycloudflare.com` with nothing before or after
+  (the launcher's own pattern, anchored; a test keeps them equal), and `until`
+  is a time in the future.
+- Added beyond the plan, for Phase 7 to respect:
+  - times must be written exactly as `YYYY-MM-DDTHH:MM:SSZ` (UTC);
+  - a stop time more than 13 hours away is not believed (a session lasts 12
+    hours at most), so a wrong or tampered file cannot show "online" for long;
+  - a "Stay on this page" button stops the automatic forwarding;
+  - the forwarding replaces the page in the browser history, so "Back" from
+    the demo does not bounce the visitor forward again;
+  - the page carries its own content policy (only its own files load) and
+    asks search engines not to index it.
+- Browser check in headless Chrome against a local file server on 127.0.0.1,
+  with outside name lookups switched off: no file, broken file, stopped, past
+  time and foreign address all show "offline"; a future time shows "online"
+  with the countdown and then leaves for the address; "Stay on this page"
+  keeps the page; a page that first sees "offline" forwards after the status
+  turns "online" at the next 30-second check. Looked at screenshots at desktop
+  and phone width, light mode. Dark mode and other browsers were not looked at.
+- Not checked: the page under its real address (`/senior_project_web/` on
+  `github.io`). All paths are relative, so the folder name should not matter;
+  Phase 8 confirms it.
+- Not pushed.
 
 ## Phase 7 — Launcher option `--publish`
 
