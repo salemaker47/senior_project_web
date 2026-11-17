@@ -146,6 +146,12 @@ Done when the tests pass and a rehearsal against a local bare repository shows
 an "online" commit followed by an "offline" commit. Nothing is pushed to
 GitHub in this phase.
 
+As built: the branch holds a single commit that each publish replaces (a
+forced push, guarded: the branch name is fixed, and a branch holding other
+files is left alone). So the rehearsal shows "online" and then "offline" as
+the content of that one commit, and GitHub keeps no history of sessions. The
+launcher also has `--publish-remote`, to publish to a stand-in repository.
+
 ### Phase 8 — Go live, measure, document
 
 Needs the owner: pushing uses the owner's GitHub login, which works in the

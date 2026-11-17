@@ -39,8 +39,29 @@ Options:
 | `--open` | no access code: anyone who has the link gets in |
 | `--all-formats` | also accept `.mat`, `.h5`, TIFF and DICOM uploads |
 | `--no-sandbox` | run without the sandbox (not recommended) |
+| `--publish` | also update the permanent address (see below; not switched on yet) |
 
 One-time requirement: the tunnel tool, installed with `brew install cloudflared`.
+
+## The permanent address (being built, not switched on yet)
+
+The link above is new at every start. `--publish` is the launcher's half of a
+permanent address, `https://salemaker47.github.io/senior_project_web/`: a small
+page on GitHub that forwards visitors to the current link, or says "offline".
+
+- At start the launcher writes the current link and the stop time to the
+  `gh-pages` branch of the repository on GitHub; at stop it writes "offline".
+  It uses your saved GitHub login, like `git push` does.
+- The access code is never written there. `--publish` cannot be combined with
+  `--open`, because the page is public and the code is then the only gate.
+- That branch always holds a single commit, so GitHub keeps no list of when
+  you shared or of old links. The launcher leaves the branch alone if it finds
+  files there that it did not put there.
+- If GitHub cannot be reached, you get a warning and the session goes on with
+  the normal link.
+
+It does nothing useful until GitHub Pages is switched on for the repository.
+That is the next step of the plan (`docs/PLAN.md`, Phase 8).
 
 ## What protects your computer
 
@@ -52,18 +73,18 @@ so one failing does not expose the machine.
 | Layer | What it does | What it stops |
 |---|---|---|
 | 1. Local-only server | The site listens on `127.0.0.1`, never on the network | Anyone on your Wi-Fi or the internet connecting to it directly |
-| 2. Tunnel cage | The tunnel program may contact exactly one local port, read no personal files and start no programs | The tunnel being used to reach other things on your Mac |
+| 2. Tunnel cage | The tunnel program may contact exactly one local port, read no personal files, not open the Keychain and start no programs | The tunnel being used to reach other things on your Mac |
 | 3. Access code | A new random code per session; eight refusals ban an address for 15 minutes | Strangers who find the link; guessing the code |
 | 4. Request firewall | Only GET, HEAD and POST; scanner paths such as `/.env` or `/wp-admin` get a bare "not found"; 120 requests a minute per address; 6 uploads a minute and 40 an hour per address | Automated scanners, flooding, misuse of the model as a free service |
 | 5. Small upload surface | Only PNG and JPEG, 20 MB, 4096 by 4096 pixels | Attacks through complex file formats |
-| 6. Server cage | The server cannot read your home folder (only this project's code and the model), cannot write outside `share_data/`, cannot reach the internet and cannot start other programs | A break-in through the site turning into access to your files |
+| 6. Server cage | The server cannot read your home folder (only this project's code and the model), cannot write outside `share_data/`, cannot open the Keychain (your stored logins), cannot reach the internet and cannot start other programs | A break-in through the site turning into access to your files |
 | 7. Separate data | Its own database, upload folder and secret key; your local `.env`, database and uploads are unreadable from inside the cage | Visitors' data mixing with yours; your local secret leaking |
 | 8. Browser rules | The pages may load only the site's own files; no inline scripts; no framing; search engines are told not to index | Script injection, click-jacking, the link ending up in search results |
 | 9. Time limit and wipe | Stops after the set hours; uploads and the session database are deleted on stop | A forgotten open link; data left behind |
 
 Layers 2 and 6 use the macOS sandbox. Each was tested with a small program
 that tried to list the home folder, read `.env`, write into the code, open an
-internet connection and start a shell: all five were blocked.
+internet connection, start a shell and list the Keychain: all six were blocked.
 
 ## What it does not protect against
 

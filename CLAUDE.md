@@ -42,6 +42,12 @@ their browser.
   `share_data/`, and opens a Cloudflare quick tunnel. Never bind the shared
   server to anything but 127.0.0.1, and never look up the new tunnel address
   from this Mac right after it is created (macOS caches the "not found").
+- Permanent address (Phases 6 to 8): `deploy/pages/` is a static front-door
+  page for GitHub Pages; `deploy/tunnel/publish.py` writes it and a
+  `status.json` to the `gh-pages` branch as that branch's single commit (a
+  guarded forced push, so no history of sessions is kept). The access code must
+  never reach that branch. `door.js`, `publish.py` and `share.py` share one
+  pattern for the sharing link; tests keep them equal.
 - The site's content policy forbids inline scripts, inline styles and outside
   resources; a test enforces it. Keep new templates and scripts within it.
 - Proxy settings (`DJANGO_BEHIND_PROXY`, `DJANGO_CSRF_TRUSTED_ORIGINS`) are off
@@ -103,7 +109,9 @@ their browser.
 - Small local commits. The repo is hosted on GitHub since 2026-11-14 (`origin` =
   `https://github.com/salemaker47/senior_project_web`, public). Push only when
   the owner asks; never push `.env`, `model_store/`, `media/`, the database or
-  the golden test images (all git-ignored).
+  the golden test images (all git-ignored). One exception since Phase 7: the
+  sharing launcher pushes to the `gh-pages` branch when the owner starts it
+  with `--publish`. Nothing else is pushed without being asked.
 - The `inference/` package must not import Django.
 - Copy the preprocessing from the training repo exactly; do not re-invent it.
 - Tests use pytest and must pass without the real checkpoints: build a tiny

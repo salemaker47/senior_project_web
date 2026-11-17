@@ -117,6 +117,10 @@ runs. Guide: [deploy/tunnel/SHARING.md](deploy/tunnel/SHARING.md).
 .venv/bin/python deploy/tunnel/share.py
 ```
 
+A permanent address that forwards to the current link is being built: the
+front-door page is in `deploy/pages/` and the launcher has the option
+`--publish`, but GitHub Pages is not switched on yet (see the guide).
+
 ## Tests
 
 ```
@@ -133,7 +137,7 @@ or two skipped tests:
 - One test of the front-door page (`deploy/pages/`) runs its script in Chrome
   and is skipped where Chrome is not installed.
 
-On the development machine both run, and the count is 195 passed with none
+On the development machine both run, and the count is 217 passed with none
 skipped.
 
 ## Command-line tool

@@ -432,9 +432,56 @@ far and for unnecessary and unused parts to be deleted.
 - [x] 1. `deploy/tunnel/publish.py`: `build_status`, `publish`, tested against a local bare repository
 - [x] 2. `share.py`: option `--publish` (refused with `--open`), "online" after the tunnel registers, "offline" on stop, a failed push is only a warning
 - [x] 3. Sandbox: can the sandboxed server reach the macOS Keychain? Deny it if so; probe test extended
-- [ ] 4. `CLAUDE.md` push rule; `SHARING.md` and README mention the option
+- [x] 4. `CLAUDE.md` push rule; `SHARING.md` and README mention the option
 - [x] 5. Rehearsal with the real launcher against a local bare repository
-- [ ] 6. Notes below; summary written
+- [x] 6. Notes below; summary written
+
+### Notes
+
+- Result: `.venv/bin/python -m pytest` gives 217 passed (195 before; 20 new in
+  `tests/test_publish.py`, 2 more cases in the browser test of
+  `tests/test_pages.py`, which now also feeds the page the status the launcher
+  writes).
+- Nothing was pushed to GitHub. No `gh-pages` branch exists there. All
+  publishing in tests and in the rehearsal went into bare repositories in
+  temporary folders.
+- Different from the plan, on purpose: the `gh-pages` branch holds one commit,
+  which every publish replaces with a forced push. An appending branch would
+  have been a public, permanent list of when the laptop was sharing and of
+  every old link. Guards, because a forced push destroys what was there: the
+  branch name is a constant; a branch that holds any file the launcher did not
+  put there is refused; the push only goes through if the branch still is what
+  was just looked at (`--force-with-lease`).
+- Git is pointed at the small repository in `share_data/pages/` through
+  `GIT_DIR` and `GIT_WORK_TREE`, because that folder lies inside the project's
+  checkout. A test publishes from inside another repository and checks that
+  its HEAD, branches, index and remotes are unchanged.
+- The commits on `gh-pages` are authored as "Demo sharing launcher
+  <launcher@localhost>", not with the owner's name and email.
+- "Online" is published only after Cloudflare confirmed the link; "offline"
+  only if "online" was published, and after the tunnel is closed. If the
+  "offline" push fails, the page still turns offline at the stop time.
+- Keychain (step 3). A probe asked the Keychain for the descriptions of stored
+  items (never a password, so no prompt). Outside the sandbox it saw the
+  internet-password entry (the GitHub login) and other items. Inside the
+  server's sandbox the GitHub login was not visible, but 49 other items, 3
+  certificates and 4 keys from the system keychain were (descriptions only).
+  Both profiles now deny reading `/Library/Keychains` and looking up the
+  keychain services; either rule alone already hid everything. The probe test
+  has the new case, and with the rules taken out it reports "ALLOWED", so it
+  does detect the difference.
+- Rehearsal with the real launcher, `--publish --publish-remote <bare
+  repository>`, two minutes: tunnel registered with the new sandbox rules;
+  stand-in repository showed "online" with the link and stop time; consent,
+  upload, prediction and mask download worked through the sandboxed server;
+  after the automatic stop it showed "offline"; one commit on `gh-pages`;
+  `main` there untouched; the old link is not in the branch's history; the
+  access code is in no file of the repository; the project's own checkout and
+  branches unchanged; no process left.
+- Not tested: pushing to GitHub itself (login from the Keychain, GitHub's
+  answer to the forced push) and GitHub Pages serving the branch. That is
+  Phase 8, and it needs the owner's terminal.
+- Not pushed.
 
 ## Phase 8 — Go live, measure, document
 
