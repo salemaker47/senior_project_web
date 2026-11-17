@@ -485,8 +485,8 @@ far and for unnecessary and unused parts to be deleted.
 
 ## Phase 8 — Go live, measure, document
 
-- [ ] 1. Review of what the push makes public; owner pushes `main`
-- [ ] 2. Owner runs `share.py --publish` once (creates `gh-pages` on GitHub) and switches GitHub Pages on
+- [x] 1. Review of what the push makes public; owner pushes `main`
+- [x] 2. Owner runs `share.py --publish` once (creates `gh-pages` on GitHub) and switches GitHub Pages on
 - [ ] 3. Live checks: permanent address from a phone on mobile data, access code, upload, offline after Ctrl+C, offline after the time limit
 - [ ] 4. Delay measured from the launcher's push to the page showing the change
 - [ ] 5. Docs: `SHARING.md`, `README.md`, `docs/LIMITS.md`, `docs/MANUAL_TEST.md`
