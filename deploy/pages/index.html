@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Only this folder's own files may load; the page sends nothing anywhere else. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Brain MRI segmentation · Demo</title>
+  <link rel="stylesheet" href="door.css">
+</head>
+<body>
+  <main class="door" id="door" data-state="checking" aria-live="polite">
+    <p class="brand">
+      <span class="brand__mark" aria-hidden="true"></span>
+      <span>Brain MRI segmentation</span>
+    </p>
+
+    <section id="state-checking">
+      <h1>Checking whether the demo is online</h1>
+      <p>One moment.</p>
+    </section>
+
+    <section id="state-online" hidden>
+      <p class="badge badge--online">Online</p>
+      <h1>The demo is online</h1>
+      <p>
+        It runs on the owner's computer and is shared through a temporary link.
+        To get in you need the user name and the access code from the owner.
+      </p>
+      <p id="forward-note" aria-live="off">Opening the demo in <span id="forward-count">a few seconds</span>.</p>
+      <p class="actions">
+        <a class="btn btn--primary" id="open-link" rel="noopener noreferrer">Open the demo now</a>
+        <button type="button" class="btn" id="stay-button">Stay on this page</button>
+      </p>
+      <p class="muted" id="until-note" hidden>
+        Sharing is planned to stop at <span id="until-time"></span>, your local time.
+      </p>
+    </section>
+
+    <section id="state-offline" hidden>
+      <p class="badge">Offline</p>
+      <h1>The demo is offline right now</h1>
+      <p>
+        It runs on the owner's computer and can be reached only while the owner is
+        sharing it. This page checks again every 30 seconds and opens the demo when
+        it comes online.
+      </p>
+      <p class="muted">Last checked at <span id="checked-time">…</span>.</p>
+    </section>
+
+    <noscript>
+      <p class="notice">
+        This page needs JavaScript to find the demo's current address. Turn it on and
+        reload, or ask the owner for the link.
+      </p>
+    </noscript>
+  </main>
+
+  <footer class="foot">
+    <p><strong>Research and education demo. Not for diagnosis.</strong></p>
+  </footer>
+
+  <script src="door.js"></script>
+</body>
+</html>

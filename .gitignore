@@ -26,3 +26,6 @@ tests/golden/*/
 
 # Data of the public sharing mode (deploy/tunnel/): its own database, uploads, logs
 share_data/
+
+# Front-door page: a status file made for a local check (the launcher writes the real one elsewhere)
+deploy/pages/status.json
