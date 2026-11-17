@@ -110,6 +110,16 @@ def _q(path) -> str:
 # --------------------------------------------------------------------------- #
 # Sandbox profiles (macOS sandbox-exec). Later rules override earlier ones.
 # --------------------------------------------------------------------------- #
+# The Keychain holds the owner's stored logins (the GitHub one among them),
+# keys and certificates. Neither the server nor the tunnel has any business
+# there: not the system keychain file, and not the service that hands out
+# keychain items.
+KEYCHAIN_RULES = """;; Keychain: no stored logins, keys or certificates, not even their names.
+(deny file-read* (subpath "/Library/Keychains"))
+(deny mach-lookup (global-name "com.apple.SecurityServer") (global-name "com.apple.securityd.xpc"))
+"""
+
+
 def build_app_profile(project: Path, share_data: Path, python_prefix: Path) -> str:
     """The web server: project code readable, share_data writable, no internet, no other programs."""
     metadata = " ".join(f"(literal {_q(p)})" for p in _ancestors(project))
@@ -134,6 +144,7 @@ def build_app_profile(project: Path, share_data: Path, python_prefix: Path) -> s
 (allow file-read-metadata {metadata})
 (deny file-read-data {private})
 
+{KEYCHAIN_RULES}
 ;; Writing: only the sharing data folder and temporary files.
 (deny file-write*)
 (allow file-write* (subpath {_q(share_data)}) (subpath "/private/tmp") (subpath "/private/var/folders")
@@ -163,6 +174,7 @@ def build_tunnel_profile(share_data: Path, cloudflared: Path, port: int) -> str:
 (deny file-read* (subpath "/Users") (subpath "/Volumes"))
 (allow file-read* (subpath {_q(home)}))
 (allow file-read-metadata {metadata})
+{KEYCHAIN_RULES}
 (deny file-write*)
 (allow file-write* (subpath {_q(home)}) (subpath "/private/tmp") (subpath "/private/var/folders")
        (literal "/dev/null") (literal "/dev/tty") (regex #"^/dev/ttys[0-9]+$"))

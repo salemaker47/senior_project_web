@@ -82,6 +82,10 @@ def test_server_profile_rules(share):
     assert profile.index("(deny file-read* ") < profile.index("(allow file-read* ")
     assert profile.index("(allow file-read* ") < profile.index("(deny file-read-data")
     assert profile.index("(deny process-exec)") < profile.index("(allow process-exec")
+    # The Keychain is closed after the last rule that allows reading.
+    assert share.KEYCHAIN_RULES in profile
+    assert profile.rindex("(allow file-read") < profile.index('(deny file-read* (subpath "/Library/Keychains"))')
+    assert '(deny mach-lookup (global-name "com.apple.SecurityServer")' in profile
 
 
 def test_tunnel_profile_allows_only_the_one_local_port(share):
@@ -91,6 +95,8 @@ def test_tunnel_profile_allows_only_the_one_local_port(share):
     assert '(allow network-outbound (remote ip "localhost:54321"))' in profile
     assert '(deny file-read* (subpath "/Users")' in profile
     assert '(allow process-exec (literal "/opt/homebrew/bin/cloudflared"))' in profile
+    assert share.KEYCHAIN_RULES in profile
+    assert profile.rindex("(allow file-read") < profile.index('(deny file-read* (subpath "/Library/Keychains"))')
 
 
 def test_wipe_removes_uploads_and_database(share, tmp_path):
@@ -111,6 +117,39 @@ def test_share_data_is_git_ignored_and_launcher_binds_loopback():
     assert "share_data/" in (REPO_ROOT / ".gitignore").read_text().split()
     source = SHARE_PY.read_text()
     assert 'f"127.0.0.1:{port}"' in source and "0.0.0.0" not in source
+
+
+# Asks the macOS Keychain which items exist, for every kind of item. Only the
+# descriptions are requested, never a password, so no prompt appears. Seeing
+# even one item counts as "ALLOWED".
+KEYCHAIN_PROBE = """
+def keychain_items():
+    import ctypes
+    sec = ctypes.CDLL('/System/Library/Frameworks/Security.framework/Security')
+    cf = ctypes.CDLL('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation')
+    ptr = ctypes.c_void_p
+    cf.CFDictionaryCreateMutable.restype = ptr
+    cf.CFDictionaryCreateMutable.argtypes = [ptr, ctypes.c_long, ptr, ptr]
+    cf.CFDictionarySetValue.argtypes = [ptr, ptr, ptr]
+    cf.CFArrayGetCount.restype = ctypes.c_long
+    cf.CFArrayGetCount.argtypes = [ptr]
+    sec.SecItemCopyMatching.restype = ctypes.c_int32
+    sec.SecItemCopyMatching.argtypes = [ptr, ctypes.POINTER(ptr)]
+    total = 0
+    for kind in ('kSecClassInternetPassword', 'kSecClassGenericPassword', 'kSecClassCertificate', 'kSecClassKey'):
+        query = cf.CFDictionaryCreateMutable(
+            None, 0, ctypes.addressof(ptr.in_dll(cf, 'kCFTypeDictionaryKeyCallBacks')),
+            ctypes.addressof(ptr.in_dll(cf, 'kCFTypeDictionaryValueCallBacks')))
+        cf.CFDictionarySetValue(query, ptr.in_dll(sec, 'kSecClass'), ptr.in_dll(sec, kind))
+        cf.CFDictionarySetValue(query, ptr.in_dll(sec, 'kSecMatchLimit'), ptr.in_dll(sec, 'kSecMatchLimitAll'))
+        cf.CFDictionarySetValue(query, ptr.in_dll(sec, 'kSecReturnAttributes'), ptr.in_dll(cf, 'kCFBooleanTrue'))
+        found = ptr()
+        if sec.SecItemCopyMatching(query, ctypes.byref(found)) == 0 and found.value:
+            total += cf.CFArrayGetCount(found)
+    if total == 0:
+        raise PermissionError('no keychain item is visible')
+t('keychain', keychain_items)
+"""
 
 
 @pytest.mark.skipif(sys.platform != "darwin" or not shutil.which("sandbox-exec"),
@@ -136,6 +175,7 @@ def test_server_sandbox_really_blocks(share, tmp_path):
         "t('read_code', lambda: open('manage.py').read())\n"
         "t('write_data', lambda: open(sys.argv[1] + '/ok.txt', 'w').write('x'))\n"
         "t('listen_local', lambda: socket.create_server(('127.0.0.1', 0)).close())\n"
+        + KEYCHAIN_PROBE
     )
     # The probe lives in pytest's temp folder, which is outside /Users and readable.
     result = subprocess.run(
@@ -147,7 +187,7 @@ def test_server_sandbox_really_blocks(share, tmp_path):
     outcome = dict(line.split() for line in result.stdout.strip().splitlines())
     assert outcome == {
         "list_home": "blocked", "read_env": "blocked", "write_code": "blocked",
-        "internet": "blocked", "shell": "blocked",
+        "internet": "blocked", "shell": "blocked", "keychain": "blocked",
         "read_code": "ALLOWED", "write_data": "ALLOWED", "listen_local": "ALLOWED",
     }, result.stdout + result.stderr
     assert not (REPO_ROOT / "scans" / "_sandbox_probe.py").exists()
