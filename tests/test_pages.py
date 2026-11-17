@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import subprocess
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -160,8 +161,19 @@ def _status(**changes):
     return status
 
 
+def _launcher_status(online: bool):
+    """What deploy/tunnel/publish.py writes, for its longest session."""
+    spec = importlib.util.spec_from_file_location("publish", REPO_ROOT / "deploy" / "tunnel" / "publish.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    now = datetime(2026, 11, 17, 18, 0, 0, tzinfo=timezone.utc)                  # = NOW
+    return module.build_status(online, GOOD if online else "", now + timedelta(hours=12) if online else None, now=now)
+
+
 DECIDE_CASES = [
     # (what, status, expected state)
+    ("written by the launcher: online, 12-hour session", _launcher_status(True), "online"),
+    ("written by the launcher: offline", _launcher_status(False), "offline"),
     ("sharing, one hour left", _status(), "online"),
     ("sharing, twelve hours left", _status(until="2026-11-18T06:00:00Z"), "online"),
     ("stopped", {"online": False, "url": "", "until": "", "updated": NOW}, "offline"),

@@ -429,7 +429,12 @@ far and for unnecessary and unused parts to be deleted.
 
 ## Phase 7 — Launcher option `--publish`
 
-- [ ] not started (steps in `docs/PLAN.md`)
+- [x] 1. `deploy/tunnel/publish.py`: `build_status`, `publish`, tested against a local bare repository
+- [x] 2. `share.py`: option `--publish` (refused with `--open`), "online" after the tunnel registers, "offline" on stop, a failed push is only a warning
+- [ ] 3. Sandbox: can the sandboxed server reach the macOS Keychain? Deny it if so; probe test extended
+- [ ] 4. `CLAUDE.md` push rule; `SHARING.md` and README mention the option
+- [ ] 5. Rehearsal with the real launcher against a local bare repository
+- [ ] 6. Notes below; summary written
 
 ## Phase 8 — Go live, measure, document
 

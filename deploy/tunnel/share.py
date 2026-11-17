@@ -5,6 +5,7 @@ Share the site from this computer through a temporary public link.
     .venv/bin/python deploy/tunnel/share.py              # 3 hours, with an access code
     .venv/bin/python deploy/tunnel/share.py --hours 1
     .venv/bin/python deploy/tunnel/share.py --open       # no access code (anyone with the link)
+    .venv/bin/python deploy/tunnel/share.py --publish    # also update the permanent github.io address
 
 Press Ctrl+C to stop. Everything visitors uploaded is deleted when it stops.
 
@@ -28,6 +29,11 @@ What it does, and the layers that protect this computer (see SHARING.md):
                      ones are not even readable from inside the sandbox.
   8. Limited time.   It stops by itself after --hours, and wipes the uploads.
 
+With --publish the launcher also tells the front-door page on GitHub Pages
+(deploy/pages/) where the demo is now, and that it is offline when the session
+stops; see publish.py. That is done by this launcher itself, outside the
+sandboxes; the server and the tunnel never talk to GitHub.
+
 Standard library only.
 """
 from __future__ import annotations
@@ -45,14 +51,17 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))     # publish.py lies next to this file
+import publish  # noqa: E402
+from publish import TUNNEL_URL_RE  # noqa: E402  (one definition, shared with the front-door page)
 
 PROJECT = Path(__file__).resolve().parents[2]
 SHARE_DATA = PROJECT / "share_data"
 TUNNEL_HOST_SUFFIX = ".trycloudflare.com"
-TUNNEL_URL_RE = re.compile(r"https://[a-z0-9][a-z0-9-]*\.trycloudflare\.com")
 TUNNEL_READY_RE = re.compile(r"Registered tunnel connection", re.IGNORECASE)
 CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"        # no look-alikes (0/o, 1/l/i)
 ACCESS_USER = "demo"
@@ -238,6 +247,21 @@ def _count(path: Path, needle: str = "") -> int:
         return sum(1 for line in f if needle in line)
 
 
+def publish_state(remote: str, work_dir: Path, online: bool, url: str = "",
+                  until: Optional[datetime] = None) -> bool:
+    """
+    Tell the front-door page whether the demo is online, and where. Returns
+    whether that worked. Never raises: sharing must not depend on GitHub.
+    The access code is not an input here and cannot be published.
+    """
+    try:
+        publish.publish(publish.build_status(online, url, until), remote, work_dir)
+        return True
+    except Exception as exc:  # noqa: BLE001 - whatever went wrong, the session goes on
+        say(f"  warning: the front door could not be updated: {exc}")
+        return False
+
+
 def prepare_share_data(share_data: Path) -> None:
     """Fresh database and upload folder for this session; logs of the last session are replaced."""
     for name in ("db.sqlite3", "db.sqlite3-journal"):
@@ -269,9 +293,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--all-formats", action="store_true",
                         help="also accept .mat, .h5, TIFF and DICOM uploads (more file parsers exposed)")
     parser.add_argument("--no-sandbox", action="store_true", help="do not sandbox the server and the tunnel")
+    parser.add_argument("--publish", action="store_true",
+                        help="also update the front-door page on GitHub Pages (the permanent address)")
+    parser.add_argument("--publish-remote", metavar="REPOSITORY", default=None,
+                        help="with --publish: publish to this repository instead of this project's "
+                             "origin (for rehearsals with a local repository)")
     args = parser.parse_args(argv)
     if not 0 < args.hours <= MAX_HOURS:
         parser.error(f"--hours must be between 0 and {MAX_HOURS:g}")
+    if args.publish and args.open:
+        parser.error("--publish cannot be combined with --open: the permanent address is public, "
+                     "so the access code is the only thing that keeps strangers out")
+    if args.publish_remote and not args.publish:
+        parser.error("--publish-remote needs --publish")
 
     python = str(PROJECT / ".venv" / "bin" / "python")
     cloudflared = find_cloudflared()
@@ -281,6 +315,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     if cloudflared is None:
         say("error: the tunnel tool is not installed. Install it with:  brew install cloudflared")
         return 2
+    remote = None
+    if args.publish:
+        remote = args.publish_remote or publish.origin_url(PROJECT)
+        if not remote:
+            say("error: --publish needs this project's `origin` on GitHub (git remote -v shows none).")
+            return 2
     pid_file = SHARE_DATA / "share.pid"
     if pid_file.is_file():
         try:
@@ -308,6 +348,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         tunnel_profile.write_text(build_tunnel_profile(SHARE_DATA, Path(cloudflared).resolve(), port))
 
     server = tunnel = awake = None
+    published = False                    # "online" reached the front door, so "offline" must follow
+    until = None
+    pages_work = SHARE_DATA / "pages"
     stopping = {"flag": False}
 
     def request_stop(signum, frame):
@@ -394,13 +437,25 @@ def main(argv: Optional[List[str]] = None) -> int:
         except OSError:
             awake = None
 
-        until = datetime.now() + timedelta(hours=args.hours)
+        until_utc = datetime.now(timezone.utc) + timedelta(hours=args.hours)
+        until = until_utc.astimezone()                       # local time, for the messages
+        if remote and registered and not stopping["flag"]:
+            say("Updating the front door ...")
+            published = publish_state(remote, pages_work, True, url, until_utc)
+        elif remote:
+            say("  note: the front door is not updated, because the link is not confirmed.")
+
         lines = ["", "=" * 64, "  The demo is shared.", "",
                  f"  Link:         {url}"]
         if access_code:
             lines += [f"  User name:    {ACCESS_USER}", f"  Access code:  {access_code}"]
         else:
             lines += ["  Access code:  none (--open): anyone with the link gets in"]
+        if remote:
+            permanent = publish.pages_address(remote) or f"the gh-pages branch of {remote}"
+            lines += ["", f"  Permanent:    {permanent}",
+                      "                " + ("forwards here in about a minute" if published
+                                            else "NOT updated (see the warning above); use the link")]
         lines += ["",
                   f"  Stops by itself at {until:%H:%M} (in {args.hours:g} h). Press Ctrl+C to stop now.",
                   f"  Sandbox: {'on' if use_sandbox else 'OFF'}   Uploads: "
@@ -415,7 +470,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             say("note: Cloudflare has not confirmed the connection yet. If the link does not")
             say("work within two minutes, stop with Ctrl+C and start again.\n")
 
-        while not stopping["flag"] and datetime.now() < until:
+        while not stopping["flag"] and datetime.now(timezone.utc) < until_utc:
             if server.poll() is not None:
                 say("The server stopped unexpectedly. See share_data/logs/server.log")
                 break
@@ -431,6 +486,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         say("\nStopping ...")
         _stop(tunnel, "the tunnel (the link no longer works)")      # close the door first
         _stop(server, "the server")
+        if published:
+            if publish_state(remote, pages_work, False):
+                say("  the front door says 'offline' (GitHub needs about a minute to show it)")
+            else:
+                say(f"  the front door will say 'offline' by itself at {until:%H:%M}")
         if awake is not None and awake.poll() is None:
             awake.terminate()
         requests = _count(logs / "access.log")
